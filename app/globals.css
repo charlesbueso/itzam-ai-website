@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #000000;
+  --foreground: #ece7e7;
+}
+
+html,
+body {
+  background: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* RevealText — initial states (avoid flash before JS runs) */
+.reveal-wrap .reveal-base {
+  opacity: 0;
+  transform: translateY(24px);
+  visibility: hidden;
+}
+.reveal-wrap .reveal-fill {
+  clip-path: inset(-20% 100% -20% 0);
+}
+.reveal-wrap .reveal-line {
+  opacity: 0;
+  visibility: hidden;
+}

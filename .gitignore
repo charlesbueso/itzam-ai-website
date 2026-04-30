@@ -1,0 +1,99 @@
+# ─────────────────────────────────────────────────────────────
+# Itzam.ai — .gitignore (Next.js + Python tooling)
+# ─────────────────────────────────────────────────────────────
+
+# ── Node / Next.js ──────────────────────────────────────────
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Package manager debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Lockfile lockouts (keep package-lock.json — do NOT ignore it)
+# Uncomment only if you switch package managers:
+# yarn.lock
+# pnpm-lock.yaml
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# ── Environment variables ───────────────────────────────────
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+# Keep example files tracked
+!.env.example
+!.env.local.example
+
+# ── Vercel ──────────────────────────────────────────────────
+.vercel/
+
+# ── Python ──────────────────────────────────────────────────
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+*.egg
+*.egg-info/
+.eggs/
+build/
+dist/
+wheels/
+pip-wheel-metadata/
+
+# Tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ── Editors / IDEs ──────────────────────────────────────────
+.vscode/
+!.vscode/settings.json.example
+.idea/
+*.swp
+*.swo
+*~
+
+# ── OS ──────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ── Misc ────────────────────────────────────────────────────
+*.pem
+*.log
+*.bak
+*.tmp
