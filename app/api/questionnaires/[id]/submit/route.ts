@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { waitUntil } from "@vercel/functions";
 
 import { requireUser } from "@/lib/auth/requireUser";
 import { isAllowedOrigin } from "@/lib/security/origin";
@@ -141,15 +142,16 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     targetId: q.id,
   });
 
-  // Run jobs synchronously here. In dev (and serverless prod) fire-and-forget
-  // background promises after `return` are not reliable — Next.js may kill
-  // the function before they complete. Awaiting is fine: jobs are bounded
-  // (drive + 2 emails) and the cron will still retry anything that fails.
-  try {
-    await processJobs({ limit: 3, questionnaireId: q.id });
-  } catch (e) {
-    console.error("immediate job processing failed", e);
-  }
+  // Run drive + email jobs *after* the response is sent so the user sees the
+  // "thanks" page immediately instead of waiting 6–9s for Sheets + Resend.
+  // The cron will still retry anything that fails. `waitUntil` keeps the
+  // serverless function alive on Vercel past the response; locally it just
+  // resolves whenever the promise does.
+  waitUntil(
+    processJobs({ limit: 3, questionnaireId: q.id }).catch((e) => {
+      console.error("deferred job processing failed", e);
+    })
+  );
 
   return NextResponse.json({ ok: true });
 }

@@ -25,7 +25,7 @@ export default async function CuestionarioPage({
   // RLS guarantees only the assigned client (or admin) can read.
   const { data: q } = await supabase
     .from("questionnaires")
-    .select("id, client_name, status, preferred_locale")
+    .select("id, client_name, client_company, status, preferred_locale")
     .eq("id", params.id)
     .maybeSingle();
 
@@ -62,6 +62,11 @@ export default async function CuestionarioPage({
             {dict.app.questionnaire.title}
           </h1>
           <div aria-hidden className="mt-3 h-px w-16 bg-[#c9a040]" />
+          {(q.client_company || q.client_name) && (
+            <p className="mt-3 text-xs uppercase tracking-widest text-white/50">
+              {q.client_company || q.client_name}
+            </p>
+          )}
           <p className="mt-4 text-sm text-white/60">
             {dict.app.questionnaire.intro}
           </p>

@@ -25,7 +25,7 @@ export default async function AdminQuestionnaireDetail({
   const { data: q } = await supabase
     .from("questionnaires")
     .select(
-      "id, client_name, client_email, preferred_locale, status, created_at, sent_at, completed_at, drive_folder_url, drive_sheet_url, invite_url, invite_token_expires_at, invite_token_uses_count"
+      "id, client_name, client_company, client_email, preferred_locale, status, created_at, sent_at, completed_at, drive_folder_url, drive_sheet_url, invite_url, invite_token_expires_at, invite_token_uses_count"
     )
     .eq("id", params.id)
     .maybeSingle();
@@ -58,8 +58,8 @@ export default async function AdminQuestionnaireDetail({
       </Link>
 
       <header className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">{q.client_name}</h1>
-        <p className="text-sm text-white/50">{q.client_email}</p>
+        <h1 className="text-2xl font-semibold tracking-tight">{q.client_company || q.client_name}</h1>
+        <p className="text-sm text-white/50">{q.client_name} · {q.client_email}</p>
         <p className="mt-1 text-xs text-white/40">
           {dict.app.admin.colStatus}: {q.status}
         </p>
@@ -70,11 +70,15 @@ export default async function AdminQuestionnaireDetail({
           questionnaireId={q.id}
           initial={{
             client_name: q.client_name,
+            client_company: q.client_company || q.client_name,
             client_email: q.client_email,
             preferred_locale: (q.preferred_locale as "es" | "en") || "es",
           }}
           labels={{
             nameLabel: dict.app.admin.clientNameLabel,
+            nameHint: dict.app.admin.clientNameHint,
+            companyLabel: dict.app.admin.clientCompanyLabel,
+            companyHint: dict.app.admin.clientCompanyHint,
             emailLabel: dict.app.admin.clientEmailLabel,
             localeLabel: dict.app.admin.preferredLocaleLabel,
             saving: dict.app.admin.editSaving,

@@ -12,7 +12,7 @@ export function getResend(): Resend | null {
   return cached;
 }
 
-export const RESEND_FROM = process.env.RESEND_FROM || "Itzam.ai <hello@notifications.itzam.ai>";
+export const RESEND_FROM = process.env.RESEND_FROM || "Itzam.ai <hello@itzam.ai>";
 
 /**
  * Address users should reply to. Always `contact@itzam.ai` — the `from`

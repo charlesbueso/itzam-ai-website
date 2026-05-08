@@ -15,9 +15,14 @@ export function NewQuestionnaireForm({ locale }: { locale: string }) {
     const email = String(fd.get("client_email") || "").trim().toLowerCase();
     const emailConfirm = String(fd.get("client_email_confirm") || "").trim().toLowerCase();
     const name = String(fd.get("client_name") || "").trim();
+    const company = String(fd.get("client_company") || "").trim();
     const preferred_locale = String(fd.get("preferred_locale") || "es");
 
     if (!name || name.length > 200) {
+      setError(t.app.common.error);
+      return;
+    }
+    if (!company || company.length > 200) {
       setError(t.app.common.error);
       return;
     }
@@ -37,6 +42,7 @@ export function NewQuestionnaireForm({ locale }: { locale: string }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           client_name: name,
+          client_company: company,
           client_email: email,
           preferred_locale,
         }),
@@ -52,9 +58,17 @@ export function NewQuestionnaireForm({ locale }: { locale: string }) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
-      <Field label={t.app.admin.clientNameLabel}>
+      <Field label={t.app.admin.clientNameLabel} hint={t.app.admin.clientNameHint}>
         <input
           name="client_name"
+          required
+          maxLength={200}
+          className="w-full rounded border border-white/15 bg-black px-3 py-2 outline-none focus:border-white/40"
+        />
+      </Field>
+      <Field label={t.app.admin.clientCompanyLabel} hint={t.app.admin.clientCompanyHint}>
+        <input
+          name="client_company"
           required
           maxLength={200}
           className="w-full rounded border border-white/15 bg-black px-3 py-2 outline-none focus:border-white/40"
@@ -105,11 +119,12 @@ export function NewQuestionnaireForm({ locale }: { locale: string }) {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <label className="block">
       <span className="mb-1 block text-sm text-white/70">{label}</span>
       {children}
+      {hint && <span className="mt-1 block text-xs text-white/40">{hint}</span>}
     </label>
   );
 }

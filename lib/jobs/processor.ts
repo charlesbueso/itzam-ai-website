@@ -80,10 +80,14 @@ async function runJob(kind: JobKind, questionnaireId: string) {
   const supabase = getSupabaseAdminClient();
   const { data: q, error } = await supabase
     .from("questionnaires")
-    .select("id, client_name, client_email, preferred_locale, client_folder_url, drive_folder_url")
+    .select("id, client_name, client_company, client_email, preferred_locale, client_folder_url, drive_folder_url")
     .eq("id", questionnaireId)
     .single();
   if (error || !q) throw new Error(`questionnaire not found ${questionnaireId}`);
+
+  // Drive folders are organized by company. Fall back to client_name for any
+  // pre-migration row that didn't get backfilled.
+  const driveRoot = (q.client_company as string | null) || (q.client_name as string);
 
   if (kind === "client_folder") {
     if (q.client_folder_url) return; // already done
@@ -92,7 +96,7 @@ async function runJob(kind: JobKind, questionnaireId: string) {
     if (!url || !secret) throw new Error("drive webhook not configured");
     const body = await postDrive(url, secret, {
       action: "ensure_client_folder",
-      client_name: q.client_name,
+      client_name: driveRoot,
     });
     await supabase
       .from("questionnaires")
@@ -122,7 +126,7 @@ async function runJob(kind: JobKind, questionnaireId: string) {
     const payload = {
       action: "create_assessment",
       questionnaire_id: q.id,
-      client_name: q.client_name,
+      client_name: driveRoot,
       client_email: q.client_email,
       locale: q.preferred_locale,
       submitted_at: new Date().toISOString(),

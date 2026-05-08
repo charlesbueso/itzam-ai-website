@@ -14,7 +14,7 @@ export default async function AdminPage({ params }: { params: { locale: string }
   const supabase = getSupabaseServerClient();
   const { data: rows } = await supabase
     .from("questionnaires")
-    .select("id, client_name, client_email, status, created_at, completed_at, drive_folder_url")
+    .select("id, client_name, client_company, client_email, status, created_at, completed_at, drive_folder_url")
     .order("created_at", { ascending: false })
     .limit(200);
 
@@ -61,8 +61,8 @@ export default async function AdminPage({ params }: { params: { locale: string }
               {rows.map((r) => (
                 <tr key={r.id} className="border-t border-white/10">
                   <td className="px-4 py-3">
-                    <div className="font-medium">{r.client_name}</div>
-                    <div className="text-xs text-white/50">{r.client_email}</div>
+                    <div className="font-medium">{r.client_company || r.client_name}</div>
+                    <div className="text-xs text-white/50">{r.client_name} · {r.client_email}</div>
                   </td>
                   <td className="px-4 py-3">{statusLabel(r.status)}</td>
                   <td className="px-4 py-3 text-white/60">

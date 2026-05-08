@@ -47,6 +47,7 @@ export async function POST(req: Request) {
     .from("questionnaires")
     .insert({
       client_name: parsed.data.client_name,
+      client_company: parsed.data.client_company,
       client_email: parsed.data.client_email,
       preferred_locale: parsed.data.preferred_locale,
       created_by: user.id,

@@ -6,11 +6,15 @@ type Props = {
   questionnaireId: string;
   initial: {
     client_name: string;
+    client_company: string;
     client_email: string;
     preferred_locale: "es" | "en";
   };
   labels: {
     nameLabel: string;
+    nameHint?: string;
+    companyLabel: string;
+    companyHint?: string;
     emailLabel: string;
     localeLabel: string;
     saving: string;
@@ -22,6 +26,7 @@ type Props = {
 
 export function ClientInfoEditor({ questionnaireId, initial, labels }: Props) {
   const [name, setName] = useState(initial.client_name);
+  const [company, setCompany] = useState(initial.client_company);
   const [email, setEmail] = useState(initial.client_email);
   const [locale, setLocale] = useState<"es" | "en">(initial.preferred_locale);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error" | "invalid">("idle");
@@ -58,7 +63,7 @@ export function ClientInfoEditor({ questionnaireId, initial, labels }: Props) {
     }
   }
 
-  function update(field: "client_name" | "client_email" | "preferred_locale", value: string) {
+  function update(field: "client_name" | "client_company" | "client_email" | "preferred_locale", value: string) {
     dirty.current[field] = value;
     schedule();
   }
@@ -83,6 +88,19 @@ export function ClientInfoEditor({ questionnaireId, initial, labels }: Props) {
             maxLength={200}
             className="w-full rounded border border-white/15 bg-black px-3 py-2 text-sm text-white outline-none focus:border-white/40"
           />
+          {labels.nameHint && <span className="mt-1 block text-[11px] text-white/40">{labels.nameHint}</span>}
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs text-white/50">{labels.companyLabel}</span>
+          <input
+            type="text"
+            value={company}
+            onChange={(e) => { setCompany(e.target.value); update("client_company", e.target.value); }}
+            onBlur={flush}
+            maxLength={200}
+            className="w-full rounded border border-white/15 bg-black px-3 py-2 text-sm text-white outline-none focus:border-white/40"
+          />
+          {labels.companyHint && <span className="mt-1 block text-[11px] text-white/40">{labels.companyHint}</span>}
         </label>
         <label className="block">
           <span className="mb-1 block text-xs text-white/50">{labels.emailLabel}</span>

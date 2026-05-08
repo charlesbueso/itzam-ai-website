@@ -50,7 +50,7 @@ Under **Environment Variables** before the first deploy, add:
 | `SUPABASE_SERVICE_ROLE_KEY`   | (service role key — **server-only**, never exposed)   | Production, Preview, Development |
 | `ADMIN_EMAILS`                | `you@itzam.ai,co@itzam.ai` (bootstrap fallback)       | Production, Preview, Development |
 | `RESEND_API_KEY`              | `re_...`                                              | Production, Preview, Development |
-| `RESEND_FROM`                 | `Itzam.ai <hello@notifications.itzam.ai>`             | Production, Preview, Development |
+| `RESEND_FROM`                 | `Itzam.ai <hello@itzam.ai>`                           | Production, Preview, Development |
 | `INTERNAL_NOTIFY_EMAIL`       | `you@itzam.ai`                                        | Production, Preview, Development |
 | `DRIVE_WEBHOOK_URL`           | (Apps Script v2 web app URL — see drive-intake-setup.md) | Production, Preview, Development |
 | `DRIVE_WEBHOOK_SECRET`        | (random 32+ char string, also set in Apps Script)     | Production, Preview, Development |
@@ -144,7 +144,7 @@ routed via `middleware.ts` (host-based rewrite into `/app/*`).
 5. Copy `URL`, `anon key`, and `service_role key` into Vercel env vars (table above).
 
 ### 10.3 Configure Resend
-1. Verify `notifications.itzam.ai` (or any subdomain) in Resend — add SPF, DKIM, DMARC DNS records.
+1. Verify `itzam.ai` (or any subdomain) in Resend — add SPF, DKIM, DMARC DNS records.
 2. Set `p=quarantine` on DMARC at minimum.
 3. Add `RESEND_API_KEY` to Vercel.
 

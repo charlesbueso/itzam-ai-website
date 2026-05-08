@@ -87,6 +87,8 @@ export type Dictionary = {
       passwordHelp: string;
       checkEmailTitle: string;
       checkEmailBody: string;
+      checkEmailNext: string;
+      checkEmailClose: string;
       haveAccount: string;
       loginLink: string;
       alreadyExists: string;
@@ -114,6 +116,8 @@ export type Dictionary = {
       submitDisabled: string;
       thanksTitle: string;
       thanksBody: string;
+      thanksNext: string;
+      thanksClose: string;
       alreadyCompletedTitle: string;
       alreadyCompletedBody: string;
       collaborators: {
@@ -146,6 +150,9 @@ export type Dictionary = {
       statusCancelled: string;
       newTitle: string;
       clientNameLabel: string;
+      clientNameHint: string;
+      clientCompanyLabel: string;
+      clientCompanyHint: string;
       clientEmailLabel: string;
       clientEmailConfirmLabel: string;
       preferredLocaleLabel: string;
@@ -262,6 +269,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
         checkEmailTitle: "Check your email",
         checkEmailBody:
           "We sent you a confirmation link. Click it to verify your email and continue to your assessment.",
+        checkEmailNext:
+          "Next: open the email from Itzam.ai and click the confirmation button. The link works on any device — you don't have to stay on this page.",
+        checkEmailClose:
+          "You can safely close this tab. If you don't see the email in a few minutes, check your spam folder.",
         haveAccount: "Already have an account?",
         loginLink: "Sign in",
         alreadyExists:
@@ -293,6 +304,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
         thanksTitle: "Thank you. ✦",
         thanksBody:
           "We've received your responses. We'll review them and reach out to confirm the next step.",
+        thanksNext:
+          "What happens next: our team reviews your responses within one business day and replies by email to schedule a working session.",
+        thanksClose:
+          "You can safely close this tab. A confirmation email is also on its way.",
         alreadyCompletedTitle: "Already submitted",
         alreadyCompletedBody:
           "You've already sent this questionnaire. If you need to update something, reply to your invitation email.",
@@ -325,7 +340,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
         statusCompleted: "Completed",
         statusCancelled: "Cancelled",
         newTitle: "New questionnaire",
-        clientNameLabel: "Client name",
+        clientNameLabel: "Contact name",
+        clientNameHint: "Person we'll address in emails (e.g. “María López”).",
+        clientCompanyLabel: "Company name",
+        clientCompanyHint: "Shown to the client inside the assessment and used as the Drive folder.",
         clientEmailLabel: "Client email",
         clientEmailConfirmLabel: "Confirm client email",
         preferredLocaleLabel: "Preferred language",
@@ -442,6 +460,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
         checkEmailTitle: "Revisa tu correo",
         checkEmailBody:
           "Te enviamos un link de confirmación. Haz clic para verificar tu correo y continuar con tu assessment.",
+        checkEmailNext:
+          "Siguiente paso: abre el correo de Itzam.ai y haz clic en el botón de confirmación. El link funciona desde cualquier dispositivo — no necesitas quedarte en esta página.",
+        checkEmailClose:
+          "Puedes cerrar esta pestaña sin problema. Si no ves el correo en unos minutos, revisa tu carpeta de spam.",
         haveAccount: "¿Ya tienes cuenta?",
         loginLink: "Iniciar sesión",
         alreadyExists: "Ya existe una cuenta con este correo.",
@@ -472,6 +494,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
         thanksTitle: "Gracias. ✦",
         thanksBody:
           "Recibimos tus respuestas. Las revisamos y te contactamos para coordinar el siguiente paso.",
+        thanksNext:
+          "Qué sigue: nuestro equipo revisa tus respuestas en menos de un día hábil y te escribe por correo para agendar una sesión de trabajo.",
+        thanksClose:
+          "Puedes cerrar esta pestaña sin problema. También te enviamos un correo de confirmación.",
         alreadyCompletedTitle: "Ya fue enviado",
         alreadyCompletedBody:
           "Ya enviaste este cuestionario. Si necesitas ajustar algo, responde al correo de invitación.",
@@ -504,7 +530,10 @@ export const dictionaries: Record<Locale, Dictionary> = {
         statusCompleted: "Completado",
         statusCancelled: "Cancelado",
         newTitle: "Nuevo cuestionario",
-        clientNameLabel: "Nombre del cliente",
+        clientNameLabel: "Nombre del contacto",
+        clientNameHint: "Persona a la que nos dirigiremos en los correos (p. ej. “María López”).",
+        clientCompanyLabel: "Nombre de la empresa",
+        clientCompanyHint: "Se muestra al cliente dentro del assessment y se usa como carpeta de Drive.",
         clientEmailLabel: "Correo del cliente",
         clientEmailConfirmLabel: "Confirma el correo del cliente",
         preferredLocaleLabel: "Idioma preferido",
