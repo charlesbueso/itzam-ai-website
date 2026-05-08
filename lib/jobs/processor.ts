@@ -127,6 +127,7 @@ async function runJob(kind: JobKind, questionnaireId: string) {
       action: "create_assessment",
       questionnaire_id: q.id,
       client_name: driveRoot,
+      client_contact: q.client_name,
       client_email: q.client_email,
       locale: q.preferred_locale,
       submitted_at: new Date().toISOString(),
