@@ -53,14 +53,14 @@ function setSecurityHeaders(res: NextResponse, pathname: string) {
     : "";
   const isDev = process.env.NODE_ENV !== "production";
   const scriptSrc = isDev
-    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com"
-    : "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com";
+    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://va.vercel-scripts.com"
+    : "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://va.vercel-scripts.com";
   res.headers.set(
     "Content-Security-Policy",
     [
       "default-src 'self'",
       scriptSrc,
-      `connect-src 'self' ${supabaseHost} https://*.supabase.co https://challenges.cloudflare.com ws: wss:`,
+      `connect-src 'self' ${supabaseHost} https://*.supabase.co https://challenges.cloudflare.com https://va.vercel-scripts.com ws: wss:`,
       "img-src 'self' data: https:",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
