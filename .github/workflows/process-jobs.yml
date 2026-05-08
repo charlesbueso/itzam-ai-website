@@ -1,0 +1,54 @@
+name: process-jobs
+
+# Free background poker for /api/cron/process-jobs.
+#
+# Vercel's Hobby plan caps native crons at once-per-day, which would delay
+# completed-form delivery. Running this from GitHub Actions every 5 minutes
+# is free, runs on schedule, and authenticates the same way as Vercel Cron
+# (Bearer ${CRON_SECRET}).
+#
+# Requirements (in repo Settings → Secrets and variables → Actions):
+#   - CRON_SECRET   : same value as Vercel env var
+#   - APP_BASE_URL  : https://app.itzam.ai (defaults if absent)
+#
+# Notes:
+#  - GitHub schedules are best-effort. Expect 1-15 min jitter under load.
+#  - This job is intentionally tiny so it stays well under the free runner
+#    minutes quota for public/private repos.
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: process-jobs
+  cancel-in-progress: false
+
+jobs:
+  poke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Hit /api/cron/process-jobs
+        env:
+          APP_BASE_URL: ${{ vars.APP_BASE_URL || 'https://app.itzam.ai' }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CRON_SECRET}" ]; then
+            echo "CRON_SECRET secret is not set"; exit 1
+          fi
+          # --fail-with-body returns non-zero on >=400 and prints the body.
+          # Retries 3x on transient 5xx / network errors.
+          curl --fail-with-body \
+               --silent --show-error \
+               --retry 3 --retry-all-errors \
+               --max-time 30 \
+               -H "Authorization: Bearer ${CRON_SECRET}" \
+               -X POST \
+               "${APP_BASE_URL}/api/cron/process-jobs"
+          echo
