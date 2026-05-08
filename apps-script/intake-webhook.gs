@@ -16,8 +16,8 @@
  *         02 - Analisis Interno/
  *         03 - Assessment Report/
  *         04 - Propuesta e Implementacion/
- *     Body: { action, secret?, client_name, client_email, locale,
- *             submitted_at, rows: [{position, question, answer}, ...] }
+ *     Body: { action, secret?, client_name, client_contact?, client_email,
+ *             locale, submitted_at, rows: [{position, question, answer}, ...] }
  *     Returns: { ok, assessment_folder_url, sheet_url }
  *
  * Required script properties (Project settings → Script properties):
@@ -89,12 +89,16 @@ function doPost(e) {
       DriveApp.getRootFolder().removeFile(sheetFile);
 
       var clientEmail = String(body.client_email || '').slice(0, 320);
+      var clientContact = String(body.client_contact || '').slice(0, 200);
       var locale = String(body.locale || 'es');
       var submittedAt = String(body.submitted_at || '');
 
       var intakeTab = sheet.getActiveSheet();
       intakeTab.setName('Intake');
-      intakeTab.appendRow(['Cliente', clientName]);
+      intakeTab.appendRow(['Empresa', clientName]);
+      if (clientContact) {
+        intakeTab.appendRow(['Contacto', clientContact]);
+      }
       intakeTab.appendRow(['Email', clientEmail]);
       intakeTab.appendRow(['Idioma', locale]);
       intakeTab.appendRow(['Enviado', submittedAt]);
