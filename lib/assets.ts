@@ -9,6 +9,4 @@ export const ASSETS = {
   logoGold: `${CDN}/logo-gold-nobg.png`,
   logotypeDark: `${CDN}/logotype-darkmode-nobg.png`,
   logotypeLight: `${CDN}/logotype-lightmode-nobg.png`,
-  flagUS: `${CDN}/usa.png`,
-  flagMX: `${CDN}/mex.png`,
 } as const;

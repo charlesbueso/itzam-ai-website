@@ -1,34 +1,36 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import gsap from "gsap";
 import { ASSETS } from "@/lib/assets";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { Locale } from "@/lib/i18n/dictionaries";
 
 /**
- * Navbar.
+ * Navbar — logo left, hamburger right at every breakpoint.
  *
- * - Fixed at the top of the viewport.
- * - On scroll DOWN past a threshold: smoothly slides up out of view.
- * - On any scroll UP: snaps back into view and stays fixed until the user
- *   scrolls down meaningfully again (50px cumulative).
- * - Pure CSS transform + transition. No JS-driven animation, no lerp,
- *   no bounce.
+ * - Hides on scroll-down (cumulative 50px), reveals on scroll-up or idle.
+ * - Logo theme is driven by `data-theme="light"` zones in the page (any
+ *   section can declare itself light-themed and the navbar reacts).
+ * - Hamburger opens a full-screen GSAP-animated overlay with route links
+ *   and an EN|ES pill toggle.
  */
 export default function Navbar() {
   const [hidden, setHidden] = useState(false);
-  const [overConviction, setOverConviction] = useState(false);
+  const [open, setOpen] = useState(false);
   const lastY = useRef(0);
   const downAccum = useRef(0);
   const ticking = useRef(false);
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { locale, t } = useLocale();
 
+  // Scroll hide/reveal
   useEffect(() => {
-    const HIDE_THRESHOLD = 50; // cumulative downward px required to hide
-    const TOP_LOCK = 60; // always show within this distance of the top
-    const IDLE_REVEAL_MS = 600; // after this idle time, reveal again
+    const HIDE_THRESHOLD = 50;
+    const TOP_LOCK = 60;
+    const IDLE_REVEAL_MS = 600;
 
     lastY.current = window.scrollY;
 
@@ -51,19 +53,15 @@ export default function Navbar() {
           downAccum.current = 0;
           setHidden(false);
         } else if (delta < 0) {
-          // scrolling up — show immediately and reset hide accumulator
           downAccum.current = 0;
           setHidden(false);
         } else if (delta > 0) {
           downAccum.current += delta;
-          if (downAccum.current >= HIDE_THRESHOLD) {
-            setHidden(true);
-          }
+          if (downAccum.current >= HIDE_THRESHOLD) setHidden(true);
         }
 
         lastY.current = y;
         ticking.current = false;
-        // Whenever the user pauses scrolling, bring the navbar back.
         scheduleIdleReveal();
       });
     };
@@ -75,87 +73,269 @@ export default function Navbar() {
     };
   }, []);
 
-  // Logo color swap when over the Conviction section.
-  useEffect(() => {
-    const el = document.getElementById("conviction");
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => setOverConviction(entry.isIntersecting),
-      { rootMargin: "0px 0px -95% 0px", threshold: 0 }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
-
   return (
-    <header
-      style={{
-        transform: hidden ? "translateY(-100%)" : "translateY(0)",
-        transition: "transform 250ms ease-out",
-      }}
-      className="fixed inset-x-0 top-0 z-50 flex items-center justify-center gap-4 px-6 py-4 md:justify-between md:px-10 md:py-5"
-    >
-      <a href={`/${locale}#top`} aria-label={t.nav.home} className="flex items-center">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={
-            overConviction
-              ? ASSETS.logotypeLight
-              : ASSETS.logotypeDark
-          }
-          alt="Itzam.ai"
-          className="-mt-2 h-24 w-auto md:mt-0 md:h-20"
-        />
-      </a>
+    <>
+      {/* Top gradient scrim — gives the logo/hamburger background
+          contrast against page content. Hidden only while the overlay
+          is open (the overlay paints its own black background). */}
+      <div
+        aria-hidden="true"
+        style={{
+          opacity: open ? 0 : 1,
+          transform: hidden && !open ? "translateY(-100%)" : "translateY(0)",
+          transition: "opacity 250ms ease-out, transform 250ms ease-out",
+          background:
+            "linear-gradient(to bottom, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.22) 80%, rgba(0,0,0,0) 100%)",
+        }}
+        className="pointer-events-none fixed inset-x-0 top-0 z-40 h-24 md:h-28"
+      />
 
-      <div className="absolute right-6 top-1/2 flex -translate-y-1/2 items-center gap-3 md:static md:translate-y-0 md:gap-4">
-        <a
-          href={`/${locale}#waitlist`}
-          className="hidden items-center rounded-full border border-white/20 bg-white/5 px-4 py-2 text-sm font-medium text-white transition hover:border-[#c9a040] hover:text-[#c9a040] md:inline-flex"
+      <header
+        style={{
+          transform: hidden && !open ? "translateY(-100%)" : "translateY(0)",
+          transition: "transform 250ms ease-out",
+        }}
+        className="fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-4 px-6 py-2 md:px-10 md:py-1"
+      >
+        <Link
+          href={`/${locale}`}
+          aria-label={t.nav.home}
+          className="flex items-center"
+          onClick={() => setOpen(false)}
         >
-          {t.nav.cta}
-        </a>
-        <LanguageSwitcher />
-      </div>
-    </header>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={ASSETS.logotypeDark}
+            alt="Itzam.ai"
+            className="-mt-2 h-24 w-auto md:mt-0 md:h-28"
+          />
+        </Link>
+
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
+          aria-expanded={open}
+          aria-controls="nav-overlay"
+          className={`relative z-[60] inline-flex h-11 w-11 items-center justify-center rounded-full border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a040] ${
+            open
+              ? "border-white/30 bg-white/10 text-white"
+              : "border-white/20 bg-white/5 text-white hover:border-white/40"
+          }`}
+        >
+          <Hamburger open={open} />
+        </button>
+      </header>
+
+      <NavOverlay open={open} onClose={() => setOpen(false)} />
+    </>
   );
 }
 
-function LanguageSwitcher() {
+function Hamburger({ open }: { open: boolean }) {
+  // Three equal-weight horizontal lines. On open, top and bottom
+  // collapse to center and rotate into an X; the middle line fades.
+  return (
+    <span className="relative block h-[14px] w-[22px]">
+      <span
+        aria-hidden="true"
+        className="absolute left-0 top-0 block h-[2px] w-full rounded-full bg-current transition-transform duration-300"
+        style={{ transform: open ? "translateY(6px) rotate(45deg)" : "none" }}
+      />
+      <span
+        aria-hidden="true"
+        className="absolute left-0 top-1/2 block h-[2px] w-full -translate-y-1/2 rounded-full bg-current transition-opacity duration-200"
+        style={{ opacity: open ? 0 : 1 }}
+      />
+      <span
+        aria-hidden="true"
+        className="absolute bottom-0 left-0 block h-[2px] w-full rounded-full bg-current transition-transform duration-300"
+        style={{ transform: open ? "translateY(-6px) rotate(-45deg)" : "none" }}
+      />
+    </span>
+  );
+}
+
+function NavOverlay({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
+  const { locale, t } = useLocale();
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const linksRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open, onClose]);
+
+  useEffect(() => {
+    const overlay = overlayRef.current;
+    const links = linksRef.current;
+    if (!overlay) return;
+
+    const mm = gsap.matchMedia();
+    mm.add(
+      {
+        animate: "(prefers-reduced-motion: no-preference)",
+        reduce: "(prefers-reduced-motion: reduce)",
+      },
+      (ctx) => {
+        const reduce = ctx.conditions?.reduce;
+
+        if (open) {
+          if (reduce) {
+            gsap.set(overlay, { autoAlpha: 1, y: 0 });
+            if (links) gsap.set(links.children, { autoAlpha: 1, y: 0 });
+            return;
+          }
+          gsap.fromTo(
+            overlay,
+            { autoAlpha: 0, y: -16 },
+            { autoAlpha: 1, y: 0, duration: 0.3, ease: "power3.out" }
+          );
+          if (links) {
+            gsap.fromTo(
+              links.children,
+              { autoAlpha: 0, y: 24 },
+              {
+                autoAlpha: 1,
+                y: 0,
+                duration: 0.5,
+                ease: "power3.out",
+                stagger: 0.08,
+                delay: 0.15,
+              }
+            );
+          }
+        } else {
+          gsap.to(overlay, {
+            autoAlpha: 0,
+            y: -16,
+            duration: reduce ? 0 : 0.2,
+            ease: "power3.in",
+          });
+        }
+      }
+    );
+
+    return () => mm.revert();
+  }, [open]);
+
+  const links: { href: string; label: string }[] = [
+    { href: `/${locale}`, label: t.nav.links.home },
+    { href: `/${locale}/services`, label: t.nav.links.services },
+    { href: `/${locale}/about`, label: t.nav.links.about },
+    { href: `/${locale}/contact`, label: t.nav.links.contact },
+  ];
+
+  return (
+    <div
+      ref={overlayRef}
+      id="nav-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-hidden={!open}
+      style={{ visibility: open ? "visible" : "hidden", opacity: 0 }}
+      className="fixed inset-0 z-40 flex flex-col items-end justify-end bg-black px-6 pb-16 pt-28 md:justify-center md:px-10 md:pb-16 md:pt-32"
+    >
+      <nav
+        ref={linksRef}
+        className="flex flex-col items-end gap-4 text-right md:gap-3"
+      >
+        {links.map((l, i) => (
+          <Link
+            key={l.href}
+            href={l.href}
+            onClick={onClose}
+            className="group inline-flex flex-row-reverse items-baseline gap-3 text-right text-5xl font-semibold leading-[1.05] tracking-tight text-white transition hover:text-[#c9a040] md:text-7xl"
+          >
+            <span className="font-mono text-sm uppercase tracking-[0.2em] text-white/40 group-hover:text-[#c9a040]/80">
+              {String(i + 1).padStart(2, "0")}
+            </span>
+            <span>{l.label}</span>
+          </Link>
+        ))}
+      </nav>
+
+      <div className="mt-12 flex flex-col items-end gap-3 pb-2">
+        <span className="text-xs font-medium uppercase tracking-[0.18em] text-white/50">
+          {t.footer.languageLabel}
+        </span>
+        <LanguagePill onSwitch={onClose} />
+      </div>
+    </div>
+  );
+}
+
+export function LanguagePill({
+  onSwitch,
+  variant = "dark",
+}: {
+  onSwitch?: () => void;
+  variant?: "dark" | "light";
+}) {
   const { locale, t } = useLocale();
   const pathname = usePathname();
   const router = useRouter();
 
-  // The flag we display is the OPPOSITE of the active locale (the one the
-  // user can switch TO).
-  const otherLocale: Locale = locale === "en" ? "es" : "en";
-  const flagSrc = otherLocale === "es" ? ASSETS.flagMX : ASSETS.flagUS;
-  const flagAlt = otherLocale === "es" ? "Español" : "English";
-
-  const handleSwitch = () => {
+  const switchTo = (target: Locale) => {
+    if (target === locale) return;
+    onSwitch?.();
     if (!pathname) {
-      router.push(`/${otherLocale}`);
+      router.push(`/${target}`);
       return;
     }
-    // Replace the leading /<locale> segment with the other locale.
-    const next = pathname.replace(/^\/(en|es)(?=\/|$)/, `/${otherLocale}`);
-    router.push(next === pathname ? `/${otherLocale}` : next);
+    const next = pathname.replace(/^\/(en|es)(?=\/|$)/, `/${target}`);
+    router.push(next === pathname ? `/${target}` : next);
+  };
+
+  const isDark = variant === "dark";
+  const containerCls = isDark
+    ? "border-white/15 bg-white/5"
+    : "border-neutral-900/20 bg-neutral-900/5";
+  const inactiveCls = isDark
+    ? "text-white/60 hover:text-white"
+    : "text-neutral-900/60 hover:text-neutral-900";
+
+  const Pill = (target: Locale, label: string) => {
+    const active = locale === target;
+    return (
+      <button
+        key={target}
+        type="button"
+        onClick={() => switchTo(target)}
+        aria-pressed={active}
+        aria-label={`${t.nav.switchLanguage}: ${label}`}
+        className={`min-w-[44px] rounded-full px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a040] ${
+          active ? "bg-[#c9a040] text-black" : inactiveCls
+        }`}
+      >
+        {label}
+      </button>
+    );
   };
 
   return (
-    <button
-      type="button"
-      onClick={handleSwitch}
-      aria-label={t.nav.switchLanguage}
-      title={flagAlt}
-      className="inline-flex h-6 w-6 items-center justify-center overflow-hidden rounded-md border border-white/10 bg-white/5 transition hover:border-white/30 hover:bg-white/10 focus:outline-none focus:ring-1 focus:ring-white/30"
+    <div
+      className={`inline-flex items-center gap-1 rounded-full border p-1 ${containerCls}`}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={flagSrc}
-        alt={flagAlt}
-        className="h-full w-full object-cover"
-      />
-    </button>
+      {Pill("en", "EN")}
+      {Pill("es", "ES")}
+    </div>
   );
 }
