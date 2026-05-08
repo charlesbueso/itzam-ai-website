@@ -9,6 +9,8 @@ import {
   isLocale,
 } from "@/lib/i18n/dictionaries";
 
+const SITE_URL = "https://itzam.ai";
+
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
 }
@@ -27,7 +29,9 @@ export async function generateMetadata({
       canonical: `/${params.locale}`,
       languages: {
         en: "/en",
+        "en-US": "/en",
         es: "/es",
+        "es-MX": "/es",
         "x-default": "/en",
       },
     },
@@ -35,6 +39,13 @@ export async function generateMetadata({
       title: dict.meta.title,
       description: dict.meta.description,
       locale: params.locale === "es" ? "es_MX" : "en_US",
+      url: `${SITE_URL}/${params.locale}`,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: dict.meta.title,
+      description: dict.meta.description,
     },
   };
 }

@@ -37,6 +37,9 @@ function setSecurityHeaders(res: NextResponse, pathname: string) {
   res.headers.set("X-Content-Type-Options", "nosniff");
   res.headers.set("X-Frame-Options", "DENY");
   res.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=(), payment=()");
+  // The authenticated app subdomain must never be indexed by search engines
+  // or surfaced in LLM training crawls — it only contains private workflows.
+  res.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive, nosnippet");
 
   const carriesToken = TOKEN_PATHS.some((rx) => rx.test(pathname));
   if (carriesToken) {
@@ -53,14 +56,14 @@ function setSecurityHeaders(res: NextResponse, pathname: string) {
     : "";
   const isDev = process.env.NODE_ENV !== "production";
   const scriptSrc = isDev
-    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://va.vercel-scripts.com"
-    : "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://va.vercel-scripts.com";
+    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://va.vercel-scripts.com https://www.googletagmanager.com https://www.google-analytics.com"
+    : "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://va.vercel-scripts.com https://www.googletagmanager.com https://www.google-analytics.com";
   res.headers.set(
     "Content-Security-Policy",
     [
       "default-src 'self'",
       scriptSrc,
-      `connect-src 'self' ${supabaseHost} https://*.supabase.co https://challenges.cloudflare.com https://va.vercel-scripts.com ws: wss:`,
+      `connect-src 'self' ${supabaseHost} https://*.supabase.co https://challenges.cloudflare.com https://va.vercel-scripts.com https://www.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com ws: wss:`,
       "img-src 'self' data: https:",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",

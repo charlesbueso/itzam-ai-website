@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { ASSETS } from "@/lib/assets";
+import Analytics from "@/components/Analytics";
 
 const SITE_URL = "https://itzam.ai";
 const SITE_NAME = "Itzam.ai";
@@ -10,16 +11,27 @@ const DESCRIPTION =
   "Itzam.ai is the AI agency for LATAM operators. Senior engineers design, build, and ship production-grade AI systems — agents, copilots, and automations — in 30 days, not 30 months.";
 const KEYWORDS = [
   "AI agency",
-  "LATAM AI",
-  "AI consulting México",
+  "AI agency LATAM",
+  "AI agency Mexico",
   "agencia de IA",
-  "IA México",
+  "agencia de IA México",
+  "agencia de IA LATAM",
+  "consultoría de IA",
+  "AI consulting",
+  "AI consulting Mexico",
+  "AI consulting LATAM",
   "production AI systems",
+  "sistemas de IA en producción",
   "AI agents",
+  "agentes de IA",
   "AI copilots",
-  "enterprise AI",
-  "machine learning agency",
+  "copilotos de IA",
   "AI automation",
+  "automatización con IA",
+  "enterprise AI",
+  "IA empresarial",
+  "machine learning agency",
+  "LLM consulting",
   "Itzam",
   "Itzam.ai",
 ];
@@ -33,7 +45,7 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   keywords: KEYWORDS,
   applicationName: SITE_NAME,
-  authors: [{ name: "Itzam.ai" }],
+  authors: [{ name: "Itzam.ai", url: SITE_URL }],
   creator: "Itzam.ai",
   publisher: "Itzam.ai",
   category: "technology",
@@ -41,7 +53,9 @@ export const metadata: Metadata = {
     canonical: "/",
     languages: {
       en: "/en",
+      "en-US": "/en",
       es: "/es",
+      "es-MX": "/es",
       "x-default": "/en",
     },
   },
@@ -84,6 +98,11 @@ export const metadata: Metadata = {
       "max-video-preview": -1,
     },
   },
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
 };
 
 export const viewport: Viewport = {
@@ -93,14 +112,76 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+// ─────────────────────────── Structured data ───────────────────────────
+// Rich, machine-readable description so search engines and LLM crawlers can
+// answer "what is Itzam.ai" with high fidelity.
+
 const organizationJsonLd = {
   "@context": "https://schema.org",
-  "@type": "Organization",
+  "@type": "ProfessionalService",
+  "@id": `${SITE_URL}#organization`,
   name: SITE_NAME,
+  legalName: "Itzam.ai",
+  alternateName: ["Itzam", "Itzam AI"],
   url: SITE_URL,
-  logo: ASSETS.logoGold,
+  logo: {
+    "@type": "ImageObject",
+    url: ASSETS.logoGold,
+    width: 1200,
+    height: 1200,
+  },
+  image: ASSETS.logoGold,
   description: DESCRIPTION,
-  areaServed: "Latin America",
+  slogan: "Intelligence, deployed.",
+  foundingDate: "2025",
+  knowsLanguage: ["en", "es"],
+  knowsAbout: [
+    "Artificial Intelligence",
+    "Large Language Models",
+    "AI Agents",
+    "Retrieval-Augmented Generation",
+    "Machine Learning",
+    "Generative AI",
+    "AI Copilots",
+    "AI Automation",
+    "Cloud Infrastructure",
+    "Enterprise AI",
+  ],
+  areaServed: [
+    { "@type": "Place", name: "Latin America" },
+    { "@type": "Country", name: "Mexico" },
+    { "@type": "Country", name: "United States" },
+  ],
+  serviceType: [
+    "AI Opportunity Assessment",
+    "AI Agent Development",
+    "AI Copilot Development",
+    "AI Automation",
+    "Production AI Systems",
+  ],
+  contactPoint: [
+    {
+      "@type": "ContactPoint",
+      contactType: "sales",
+      email: "hello@itzam.ai",
+      availableLanguage: ["en", "es"],
+      areaServed: ["MX", "US", "LATAM"],
+    },
+  ],
+  sameAs: [
+    "https://www.linkedin.com/company/itzam-ai",
+  ],
+};
+
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": `${SITE_URL}#website`,
+  url: SITE_URL,
+  name: SITE_NAME,
+  description: DESCRIPTION,
+  inLanguage: ["en-US", "es-MX"],
+  publisher: { "@id": `${SITE_URL}#organization` },
 };
 
 export default function RootLayout({
@@ -127,9 +208,14 @@ export default function RootLayout({
             __html: JSON.stringify(organizationJsonLd),
           }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+        />
       </head>
       <body>
         {children}
+        <Analytics />
         <SpeedInsights />
       </body>
     </html>

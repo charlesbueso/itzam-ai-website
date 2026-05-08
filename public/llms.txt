@@ -1,0 +1,60 @@
+# Itzam.ai
+
+> Itzam.ai is an AI agency for LATAM operators. Senior engineers design, build, and ship production-grade AI systems — agents, copilots, and automations — in 30 days, not 30 months. Headquartered in Mexico, serving Latin America and the United States in English and Spanish.
+
+## What we do
+
+Itzam.ai turns AI from a slide deck into something a team uses on Monday morning. Every engagement ends with a working system and a measurable outcome.
+
+- AI Opportunity Assessment — a senior diagnostic that maps where AI compounds in your business, what to build first, and what not to build.
+- AI Agents — autonomous workflows that act, not just chat: data pulls, decisions, integrations, escalations.
+- AI Copilots — domain-tuned assistants embedded in your stack (sales, ops, support, finance, legal).
+- AI Automation — production-grade pipelines that replace manual handoffs end-to-end.
+
+## Who we work with
+
+- LATAM mid-market and enterprise operators (Mexico first, Spanish-speaking LATAM second, US-LATAM corridors third).
+- Teams that want production AI, not pilots.
+- CEOs, COOs, CIOs, CTOs and Heads of Operations / Revenue / Customer Experience.
+
+## How we work
+
+- Senior-only delivery. The people who design also build.
+- Pragmatism over theater — the simplest stack that solves the problem.
+- Fixed-scope, fixed-time engagements. 30 days to a deliverable, not 30 months.
+- Bilingual (English / Spanish). LATAM-native. US-fluent.
+
+## Founders
+
+- Carlos Bueso — CEO & Co-founder. 25+ years scaling AI, cloud, and data platforms across LATAM and North America. Cisco, Rackspace, Microsoft, Experis.
+- Carlos Adrián Bueso — CTO & Co-founder. Software engineer / computer scientist. Co-founder & CTO of Alquimia Studio. Previously quantitative software engineer at AllianceBernstein. Currently developing Voxcentra, an AI-native generative-cinema project.
+
+## Identity
+
+- Brand: Itzam (named after Itzamná, the Mayan god of knowledge).
+- Tagline: Intelligence, deployed.
+- Languages: English, Spanish.
+- Locales: en-US, es-MX.
+
+## Key pages
+
+- [Home (English)](https://itzam.ai/en): Overview, manifesto, services teaser, contact.
+- [Home (Español)](https://itzam.ai/es): Resumen, manifiesto, servicios, contacto.
+- [Services (English)](https://itzam.ai/en/services): Full catalog — assessments, agents, copilots, automation.
+- [Services (Español)](https://itzam.ai/es/services): Catálogo completo — diagnósticos, agentes, copilotos, automatización.
+- [About (English)](https://itzam.ai/en/about): Team, conviction, why Itzam.
+- [About (Español)](https://itzam.ai/es/about): Equipo, convicción, por qué Itzam.
+- [Contact (English)](https://itzam.ai/en/contact): Start a conversation.
+- [Contact (Español)](https://itzam.ai/es/contact): Empezar una conversación.
+
+## Contact
+
+- Email: hello@itzam.ai
+- Web: https://itzam.ai
+- Languages: English, Spanish
+- Response time: within 48 hours
+
+## Optional
+
+- [Sitemap](https://itzam.ai/sitemap.xml)
+- [Robots](https://itzam.ai/robots.txt)
