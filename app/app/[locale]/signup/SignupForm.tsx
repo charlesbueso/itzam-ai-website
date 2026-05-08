@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { PasswordInput } from "@/components/PasswordInput";
+import { Turnstile } from "@/components/Turnstile";
 import { useT } from "@/lib/i18n/LocaleProvider";
 
 export function SignupForm({
@@ -17,6 +19,8 @@ export function SignupForm({
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState("");
+  const captchaRequired = !!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -29,17 +33,30 @@ export function SignupForm({
       setError(t.app.signup.errPasswordMismatch);
       return;
     }
+    if (captchaRequired && !captchaToken) {
+      setError(t.app.signup.errCaptcha);
+      return;
+    }
     setBusy(true);
     try {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          password,
+          turnstileToken: captchaToken,
+        }),
       });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
         if (body?.error === "exists") {
           window.location.href = `/${locale}/signup?reason=exists`;
+          return;
+        }
+        if (body?.error === "captcha") {
+          setError(t.app.signup.errCaptcha);
+          setCaptchaToken("");
           return;
         }
         if (body?.error === "weak_password") {
@@ -77,30 +94,32 @@ export function SignupForm({
         <span className="mb-1 block text-xs uppercase tracking-wider text-white/50">
           {t.app.signup.passwordLabel}
         </span>
-        <input
-          type="password"
+        <PasswordInput
           autoComplete="new-password"
           required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded border border-white/15 bg-black px-3 py-2 text-sm text-white outline-none focus:border-[#c9a040]"
+          className="w-full rounded border border-white/15 bg-black px-3 py-2 pr-10 text-sm text-white outline-none focus:border-[#c9a040]"
           minLength={10}
           maxLength={128}
+          showLabel={t.app.common.showPassword}
+          hideLabel={t.app.common.hidePassword}
         />
       </label>
       <label className="block">
         <span className="mb-1 block text-xs uppercase tracking-wider text-white/50">
           {t.app.signup.confirmLabel}
         </span>
-        <input
-          type="password"
+        <PasswordInput
           autoComplete="new-password"
           required
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
-          className="w-full rounded border border-white/15 bg-black px-3 py-2 text-sm text-white outline-none focus:border-[#c9a040]"
+          className="w-full rounded border border-white/15 bg-black px-3 py-2 pr-10 text-sm text-white outline-none focus:border-[#c9a040]"
           minLength={10}
           maxLength={128}
+          showLabel={t.app.common.showPassword}
+          hideLabel={t.app.common.hidePassword}
         />
       </label>
 
@@ -110,9 +129,11 @@ export function SignupForm({
         </p>
       )}
 
+      <Turnstile onToken={setCaptchaToken} action="signup" />
+
       <button
         type="submit"
-        disabled={busy}
+        disabled={busy || (captchaRequired && !captchaToken)}
         className="w-full rounded bg-[#c9a040] px-4 py-2 text-sm font-medium text-black transition hover:bg-[#d8b257] disabled:opacity-60"
       >
         {busy ? t.app.signup.submitting : t.app.signup.submit}

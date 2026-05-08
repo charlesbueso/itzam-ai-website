@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/LocaleProvider";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type Q = {
   id: string;
@@ -24,11 +25,13 @@ export function QuestionnaireForm({
   locale,
   questions,
   initialAnswers,
+  currentUserEmail: _currentUserEmail,
 }: {
   questionnaireId: string;
   locale: "es" | "en";
   questions: Q[];
   initialAnswers: Record<string, unknown>;
+  currentUserEmail?: string;
 }) {
   const t = useT();
   const [answers, setAnswers] = useState<Record<string, AnswerValue>>(() => {
@@ -50,6 +53,12 @@ export function QuestionnaireForm({
   const [submitError, setSubmitError] = useState<string | null>(null);
   const pending = useRef<Map<string, AnswerValue>>(new Map());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const focusedQid = useRef<string | null>(null);
+  const questionTypes = useMemo(() => {
+    const m = new Map<string, Q["type"]>();
+    for (const q of questions) m.set(q.id, q.type);
+    return m;
+  }, [questions]);
 
   const flush = async () => {
     if (pending.current.size === 0) return;
@@ -85,6 +94,57 @@ export function QuestionnaireForm({
       if (timer.current) clearTimeout(timer.current);
     };
   }, []);
+
+  // ---- Realtime: collaborator answer updates ("almost realtime, last write wins").
+  // We subscribe to row changes on `answers` filtered by questionnaire_id.
+  // Skip remote updates for fields the user is currently focused on or has
+  // unflushed local changes for, so their typing isn't clobbered mid-stroke.
+  useEffect(() => {
+    const sb = getSupabaseBrowserClient();
+    const channel = sb
+      .channel(`answers:${questionnaireId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "answers",
+          filter: `questionnaire_id=eq.${questionnaireId}`,
+        },
+        (payload: { new?: { question_id?: string; value?: unknown }; old?: { question_id?: string } }) => {
+          const row = payload.new ?? payload.old;
+          const qid = row?.question_id;
+          if (!qid) return;
+          const type = questionTypes.get(qid);
+          if (!type) return;
+          if (focusedQid.current === qid) return;
+          if (pending.current.has(qid)) return;
+          const raw = (payload.new as { value?: unknown } | undefined)?.value;
+          const next: AnswerValue =
+            raw == null
+              ? type === "multi"
+                ? []
+                : ""
+              : type === "multi"
+                ? Array.isArray(raw) ? (raw as string[]) : []
+                : String(raw);
+          setAnswers((prev) => {
+            const cur = prev[qid];
+            // Cheap equality to avoid useless re-renders.
+            if (Array.isArray(cur) && Array.isArray(next)) {
+              if (cur.length === next.length && cur.every((v, i) => v === next[i])) return prev;
+            } else if (cur === next) {
+              return prev;
+            }
+            return { ...prev, [qid]: next };
+          });
+        }
+      )
+      .subscribe();
+    return () => {
+      sb.removeChannel(channel);
+    };
+  }, [questionnaireId, questionTypes]);
 
   const onChange = (q: Q, value: AnswerValue) => {
     setAnswers((prev) => ({ ...prev, [q.id]: value }));
@@ -178,6 +238,10 @@ export function QuestionnaireForm({
                 locale={locale}
                 value={answers[q.id]}
                 onChange={(v) => onChange(q, v)}
+                onFocus={() => { focusedQid.current = q.id; }}
+                onBlur={() => {
+                  if (focusedQid.current === q.id) focusedQid.current = null;
+                }}
               />
             ))}
           </div>
@@ -209,11 +273,15 @@ function QuestionField({
   locale,
   value,
   onChange,
+  onFocus,
+  onBlur,
 }: {
   q: Q;
   locale: "es" | "en";
   value: AnswerValue;
   onChange: (v: AnswerValue) => void;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
   const t = useT();
   return (
@@ -229,6 +297,8 @@ function QuestionField({
         <textarea
           value={typeof value === "string" ? value : ""}
           onChange={(e) => onChange(e.target.value.slice(0, MAX_TEXT))}
+          onFocus={onFocus}
+          onBlur={onBlur}
           maxLength={MAX_TEXT}
           rows={4}
           className="w-full rounded border border-white/15 bg-black/40 px-3 py-2 text-white outline-none focus:border-white/40"
@@ -240,6 +310,8 @@ function QuestionField({
           type="text"
           value={typeof value === "string" ? value : ""}
           onChange={(e) => onChange(e.target.value.slice(0, MAX_TEXT))}
+          onFocus={onFocus}
+          onBlur={onBlur}
           maxLength={MAX_TEXT}
           className="w-full rounded border border-white/15 bg-black/40 px-3 py-2 text-white outline-none focus:border-white/40"
         />

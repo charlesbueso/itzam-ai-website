@@ -4,10 +4,11 @@ import { z } from "zod";
 import { isAllowedOrigin } from "@/lib/security/origin";
 import { checkRateLimit, getClientIp } from "@/lib/security/rateLimit";
 import { audit } from "@/lib/security/audit";
+import { verifyTurnstile } from "@/lib/security/turnstile";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { readPendingInvite } from "@/lib/auth/pendingInvite";
 import { validateInvite } from "@/lib/auth/invite";
-import { getResend, RESEND_FROM, safeHeader } from "@/lib/email/resend";
+import { getResend, RESEND_FROM, RESEND_REPLY_TO, safeHeader } from "@/lib/email/resend";
 import { signupConfirmEmail } from "@/lib/email/templates";
 
 /**
@@ -41,6 +42,7 @@ export const runtime = "nodejs";
 const Body = z.object({
   email: z.string().trim().toLowerCase().email().max(320),
   password: z.string().min(10).max(128),
+  turnstileToken: z.string().max(2048).optional().default(""),
 });
 
 export async function POST(req: Request) {
@@ -64,6 +66,16 @@ export async function POST(req: Request) {
     body = Body.parse(await req.json());
   } catch {
     return NextResponse.json({ error: "invalid_body" }, { status: 400 });
+  }
+
+  const captchaOk = await verifyTurnstile(body.turnstileToken, ip);
+  if (!captchaOk) {
+    await audit({
+      req,
+      action: "signup_captcha_failed",
+      actorEmail: body.email,
+    });
+    return NextResponse.json({ error: "captcha" }, { status: 400 });
   }
 
   // Must come from a valid invite.
@@ -157,6 +169,7 @@ export async function POST(req: Request) {
   const { error: sendErr } = await resend.emails.send({
     from: RESEND_FROM,
     to: body.email,
+    replyTo: RESEND_REPLY_TO,
     subject: safeHeader(tpl.subject),
     html: tpl.html,
     text: tpl.text,

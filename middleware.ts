@@ -18,7 +18,11 @@ const APP_HOSTS = new Set([
   "app-staging.itzam.ai",
 ]);
 
-const TOKEN_PATHS = [/^\/(?:[a-z]{2}\/)?invite\//, /^\/(?:[a-z]{2}\/)?auth\/callback/];
+const TOKEN_PATHS = [
+  /^\/(?:[a-z]{2}\/)?invite\//,
+  /^\/(?:[a-z]{2}\/)?auth\/callback/,
+  /^\/api\/auth\/(?:login|signup)$/,
+];
 
 function isAppHost(host: string | null): boolean {
   if (!host) return false;
@@ -49,17 +53,18 @@ function setSecurityHeaders(res: NextResponse, pathname: string) {
     : "";
   const isDev = process.env.NODE_ENV !== "production";
   const scriptSrc = isDev
-    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
-    : "script-src 'self' 'unsafe-inline'";
+    ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com"
+    : "script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com";
   res.headers.set(
     "Content-Security-Policy",
     [
       "default-src 'self'",
       scriptSrc,
-      `connect-src 'self' ${supabaseHost} https://*.supabase.co ws: wss:`,
+      `connect-src 'self' ${supabaseHost} https://*.supabase.co https://challenges.cloudflare.com ws: wss:`,
       "img-src 'self' data: https:",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com data:",
+      "frame-src https://challenges.cloudflare.com",
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
@@ -83,15 +88,24 @@ export function middleware(req: NextRequest) {
     return res;
   }
 
+  // Surface the URL path to server components (used by AppHeader to display
+  // contextual info, e.g. the company name on the questionnaire route).
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", req.nextUrl.pathname);
+
   // Rewrite to /app/<path> if not already rewritten.
   if (!url.pathname.startsWith("/app")) {
     url.pathname = `/app${url.pathname === "/" ? "" : url.pathname}`;
-    const res = NextResponse.rewrite(url);
+    const res = NextResponse.rewrite(url, {
+      request: { headers: requestHeaders },
+    });
     setSecurityHeaders(res, req.nextUrl.pathname);
     return res;
   }
 
-  const res = NextResponse.next();
+  const res = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
   setSecurityHeaders(res, req.nextUrl.pathname);
   return res;
 }

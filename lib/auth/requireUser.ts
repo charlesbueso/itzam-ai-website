@@ -1,5 +1,6 @@
 import "server-only";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
@@ -47,9 +48,49 @@ async function checkIsAdmin(email: string): Promise<boolean> {
   return envList.includes(email);
 }
 
+/**
+ * Reads the current request's pathname (+ query) from the middleware-injected
+ * `x-invoke-path` / `x-pathname` headers, falling back to `referer`. Used to
+ * build a `?next=...` redirect on auth gates so customers can bookmark deep
+ * links and come back to them after logging in (from any device).
+ */
+function currentRequestPath(): string | null {
+  const h = headers();
+  // Next.js sets one of these on the request depending on version.
+  const candidates = [
+    h.get("x-invoke-path"),
+    h.get("x-pathname"),
+    h.get("next-url"),
+  ];
+  for (const c of candidates) {
+    if (c && c.startsWith("/")) return c;
+  }
+  // Fallback: parse referer (best-effort).
+  const ref = h.get("referer");
+  if (ref) {
+    try {
+      const u = new URL(ref);
+      return u.pathname + u.search;
+    } catch {
+      // ignore
+    }
+  }
+  return null;
+}
+
+function appendNext(redirectTo: string, next: string | null): string {
+  if (!next) return redirectTo;
+  // Defense-in-depth: only relative same-origin paths.
+  if (!next.startsWith("/") || next.startsWith("//")) return redirectTo;
+  const sep = redirectTo.includes("?") ? "&" : "?";
+  return `${redirectTo}${sep}next=${encodeURIComponent(next)}`;
+}
+
 export async function requireUser(redirectTo = "/login"): Promise<SessionUser> {
   const user = await getSessionUser();
-  if (!user) redirect(redirectTo);
+  if (!user) {
+    redirect(appendNext(redirectTo, currentRequestPath()));
+  }
   return user;
 }
 

@@ -1,7 +1,7 @@
 import "server-only";
 
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
-import { getResend, RESEND_FROM, safeHeader } from "@/lib/email/resend";
+import { getResend, RESEND_FROM, RESEND_REPLY_TO, safeHeader } from "@/lib/email/resend";
 import { adminNotifyEmail, clientCompletedEmail } from "@/lib/email/templates";
 
 const MAX_BATCH = 20;
@@ -152,11 +152,10 @@ async function runJob(kind: JobKind, questionnaireId: string) {
       clientName: q.client_name as string,
       locale: ((q.preferred_locale as "es" | "en") || "es"),
     });
-    const adminReply = process.env.INTERNAL_NOTIFY_EMAIL || undefined;
     const { error: err } = await resend.emails.send({
       from: RESEND_FROM,
       to: q.client_email as string,
-      replyTo: adminReply,
+      replyTo: RESEND_REPLY_TO,
       subject: safeHeader(tpl.subject),
       html: tpl.html,
       text: tpl.text,
@@ -180,6 +179,7 @@ async function runJob(kind: JobKind, questionnaireId: string) {
     const { error: err } = await resend.emails.send({
       from: RESEND_FROM,
       to,
+      replyTo: RESEND_REPLY_TO,
       subject: safeHeader(tpl.subject),
       html: tpl.html,
       text: tpl.text,

@@ -14,6 +14,12 @@ export function getResend(): Resend | null {
 
 export const RESEND_FROM = process.env.RESEND_FROM || "Itzam.ai <hello@notifications.itzam.ai>";
 
+/**
+ * Address users should reply to. Always `contact@itzam.ai` — the `from`
+ * domain is a transactional sender and isn't monitored.
+ */
+export const RESEND_REPLY_TO = process.env.RESEND_REPLY_TO || "contact@itzam.ai";
+
 /** Strips control characters from values that go into email subjects/headers. */
 export function safeHeader(v: string): string {
   return v.replace(/[\r\n\t\u0000-\u001F\u007F]/g, "").slice(0, 200);

@@ -39,11 +39,13 @@ export async function validateInvite(
 
 /**
  * Idempotently attach a user to a questionnaire as a collaborator.
- * Service-role only.
+ * Service-role only. Also clears any matching pending invite (by email)
+ * so the 4-collaborator cap is computed correctly afterward.
  */
 export async function attachCollaborator(
   questionnaireId: string,
-  userId: string
+  userId: string,
+  userEmail?: string
 ): Promise<void> {
   const admin = getSupabaseAdminClient();
   await admin
@@ -52,6 +54,13 @@ export async function attachCollaborator(
       { questionnaire_id: questionnaireId, user_id: userId },
       { onConflict: "questionnaire_id,user_id", ignoreDuplicates: true }
     );
+  if (userEmail) {
+    await admin
+      .from("questionnaire_collaborator_invites")
+      .delete()
+      .eq("questionnaire_id", questionnaireId)
+      .eq("email", userEmail.toLowerCase());
+  }
   // Best-effort progress: move sent → in_progress on first redeem.
   await admin
     .from("questionnaires")

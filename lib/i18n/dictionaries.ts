@@ -61,6 +61,8 @@ export type Dictionary = {
       confirm: string;
       loading: string;
       error: string;
+      showPassword: string;
+      hidePassword: string;
     };
     login: {
       title: string;
@@ -71,6 +73,8 @@ export type Dictionary = {
       submitting: string;
       invalid: string;
       forbidden: string;
+      rateLimited: string;
+      captcha: string;
     };
     signup: {
       title: string;
@@ -89,6 +93,7 @@ export type Dictionary = {
       errPasswordShort: string;
       errPasswordMismatch: string;
       errGeneric: string;
+      errCaptcha: string;
     };
     invite: {
       invalidTitle: string;
@@ -111,6 +116,20 @@ export type Dictionary = {
       thanksBody: string;
       alreadyCompletedTitle: string;
       alreadyCompletedBody: string;
+      collaborators: {
+        heading: string;
+        you: string;
+        pending: string;
+        addPlaceholder: string;
+        addCta: string;
+        adding: string;
+        added: string;
+        limitReached: string;
+        invalidEmail: string;
+        selfInvite: string;
+        genericError: string;
+        max: string;
+      };
     };
     admin: {
       title: string;
@@ -215,6 +234,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         confirm: "Confirm",
         loading: "Loading…",
         error: "Something went wrong.",
+        showPassword: "Show password",
+        hidePassword: "Hide password",
       },
       login: {
         title: "Sign in",
@@ -225,6 +246,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         submitting: "Signing in…",
         invalid: "Invalid email or password.",
         forbidden: "Your account is not authorized for the admin panel.",
+        rateLimited: "Too many attempts. Please wait a few minutes and try again.",
+        captcha: "Please complete the verification challenge and try again.",
       },
       signup: {
         title: "Create your account",
@@ -246,6 +269,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
         errPasswordShort: "Password must be at least 10 characters.",
         errPasswordMismatch: "Passwords don't match.",
         errGeneric: "Something went wrong. Please try again.",
+        errCaptcha: "Please complete the verification challenge and try again.",
       },
       invite: {
         invalidTitle: "This link is no longer valid",
@@ -258,7 +282,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       questionnaire: {
         title: "AI Opportunity Assessment",
         intro:
-          "Answer at your own pace — your responses save automatically. You can come back later from the same link.",
+          "Answer at your own pace — your responses save automatically. You can come back later from this same link.",
         progress: "Progress",
         autosaved: "Saved",
         autosaveError: "Couldn't save — retrying.",
@@ -272,6 +296,20 @@ export const dictionaries: Record<Locale, Dictionary> = {
         alreadyCompletedTitle: "Already submitted",
         alreadyCompletedBody:
           "You've already sent this questionnaire. If you need to update something, reply to your invitation email.",
+        collaborators: {
+          heading: "Collaborators",
+          you: "you",
+          pending: "invited",
+          addPlaceholder: "colleague@company.com",
+          addCta: "Invite",
+          adding: "Sending…",
+          added: "Invitation sent",
+          limitReached: "You've reached the 4-collaborator limit.",
+          invalidEmail: "Please enter a valid email.",
+          selfInvite: "That's your own email.",
+          genericError: "Couldn't send the invitation. Try again.",
+          max: "Up to 4 people total.",
+        },
       },
       admin: {
         title: "Admin",
@@ -375,6 +413,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         confirm: "Confirmar",
         loading: "Cargando…",
         error: "Algo salió mal.",
+        showPassword: "Mostrar contraseña",
+        hidePassword: "Ocultar contraseña",
       },
       login: {
         title: "Iniciar sesión",
@@ -385,6 +425,8 @@ export const dictionaries: Record<Locale, Dictionary> = {
         submitting: "Entrando…",
         invalid: "Correo o contraseña inválidos.",
         forbidden: "Tu cuenta no está autorizada para el panel admin.",
+        rateLimited: "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
+        captcha: "Completa la verificación e inténtalo de nuevo.",
       },
       signup: {
         title: "Crea tu cuenta",
@@ -406,6 +448,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
         errPasswordShort: "La contraseña debe tener al menos 10 caracteres.",
         errPasswordMismatch: "Las contraseñas no coinciden.",
         errGeneric: "Algo salió mal. Inténtalo de nuevo.",
+        errCaptcha: "Completa la verificación e inténtalo de nuevo.",
       },
       invite: {
         invalidTitle: "Este link ya no es válido",
@@ -418,7 +461,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       questionnaire: {
         title: "AI Opportunity Assessment",
         intro:
-          "Responde a tu ritmo — tus respuestas se guardan solas. Puedes volver luego desde el mismo link.",
+          "Responde a tu ritmo — tus respuestas se guardan solas. Puedes volver luego desde este mismo link.",
         progress: "Progreso",
         autosaved: "Guardado",
         autosaveError: "No se pudo guardar — reintentando.",
@@ -432,6 +475,20 @@ export const dictionaries: Record<Locale, Dictionary> = {
         alreadyCompletedTitle: "Ya fue enviado",
         alreadyCompletedBody:
           "Ya enviaste este cuestionario. Si necesitas ajustar algo, responde al correo de invitación.",
+        collaborators: {
+          heading: "Colaboradores",
+          you: "tú",
+          pending: "invitado",
+          addPlaceholder: "colega@empresa.com",
+          addCta: "Invitar",
+          adding: "Enviando…",
+          added: "Invitación enviada",
+          limitReached: "Llegaste al límite de 4 colaboradores.",
+          invalidEmail: "Ingresa un correo válido.",
+          selfInvite: "Ese es tu propio correo.",
+          genericError: "No se pudo enviar la invitación. Inténtalo de nuevo.",
+          max: "Hasta 4 personas en total.",
+        },
       },
       admin: {
         title: "Admin",

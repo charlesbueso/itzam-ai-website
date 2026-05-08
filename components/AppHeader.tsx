@@ -1,5 +1,8 @@
+import { headers } from "next/headers";
+
 import { ASSETS } from "@/lib/assets";
 import { getSessionUser } from "@/lib/auth/requireUser";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 type Props = {
   /** Optional href for the logo link (defaults to no link). */
@@ -8,12 +11,53 @@ type Props = {
   right?: React.ReactNode;
 };
 
+const CUESTIONARIO_RE =
+  /^\/(?:en|es)\/cuestionario\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(?:\/|$)/i;
+
+/**
+ * Best-effort current pathname read from the middleware-injected header.
+ * Falls back to common Next.js internal headers.
+ */
+function readPathname(): string | null {
+  const h = headers();
+  return (
+    h.get("x-pathname") ||
+    h.get("x-invoke-path") ||
+    h.get("next-url") ||
+    null
+  );
+}
+
+/**
+ * If the current page is a questionnaire, look up the client/company name.
+ * RLS gates the read, so a non-collaborator never sees it.
+ */
+async function resolveCompanyName(): Promise<string | null> {
+  const pathname = readPathname();
+  if (!pathname) return null;
+  const m = pathname.match(CUESTIONARIO_RE);
+  if (!m) return null;
+  try {
+    const supabase = getSupabaseServerClient();
+    const { data } = await supabase
+      .from("questionnaires")
+      .select("client_name")
+      .eq("id", m[1])
+      .maybeSingle();
+    return (data?.client_name as string | undefined) || null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * App header used across all `/app/*` pages.
  * - Itzam wordmark (dark-mode variant on the black app background)
  * - Thin gold divider underneath
- * - When the visitor is logged in, their email is shown on the far right
- *   (symmetric to the logo). Pass `right` to override.
+ * - When the visitor is logged in, their email is shown on the far right.
+ *   On a questionnaire route the client's company name is shown right
+ *   before the email (e.g. `Apple — charles@gmail.com`).
+ *   Pass `right` to override entirely.
  */
 export async function AppHeader({ href, right }: Props) {
   const logo = (
@@ -25,18 +69,23 @@ export async function AppHeader({ href, right }: Props) {
   if (!resolvedRight) {
     const user = await getSessionUser();
     if (user) {
-      const name =
-        (user as any).user_metadata?.full_name ||
-        (user as any).user_metadata?.name ||
-        user.email ||
-        null;
-      if (name) {
-        resolvedRight = (
-          <span className="text-sm text-white/70" title={user.email || undefined}>
-            {name}
-          </span>
-        );
-      }
+      const company = await resolveCompanyName();
+      resolvedRight = (
+        <div
+          className="text-right text-sm text-white/80"
+          title={user.email || undefined}
+        >
+          {company ? (
+            <>
+              <span className="font-medium text-[#c9a040]">{company}</span>
+              <span className="mx-2 text-white/30">—</span>
+              <span className="text-white/70">{user.email}</span>
+            </>
+          ) : (
+            <span className="text-white/70">{user.email}</span>
+          )}
+        </div>
+      );
     }
   }
 

@@ -72,7 +72,7 @@ export async function GET(
   // Attach this authenticated user as a collaborator (idempotent) and
   // bounce to the form. Works for the original recipient, returning users,
   // and shared-link colleagues alike.
-  await attachCollaborator(params.id, user.id);
+  await attachCollaborator(params.id, user.id, user.email);
   await audit({
     req,
     actorId: user.id,

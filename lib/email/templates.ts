@@ -51,13 +51,13 @@ export function clientCompletedEmail(opts: {
     ? `
       <p style="margin:0 0 16px 0;">Hi ${name},</p>
       <p style="margin:0 0 16px 0;">We received your responses to the <strong>AI Opportunity Assessment</strong>. Our team will review them and get back to you shortly to confirm the next steps.</p>
-      <p style="margin:0 0 16px 0;">If you have any questions in the meantime, just reply to this email.</p>
+      <p style="margin:0 0 16px 0;">If you have any questions in the meantime, write to <a href="mailto:contact@itzam.ai" style="color:#c9a14a;">contact@itzam.ai</a>.</p>
       <p style="margin:24px 0 0 0;">— The Itzam.ai team</p>
     `
     : `
       <p style="margin:0 0 16px 0;">Hola ${name},</p>
       <p style="margin:0 0 16px 0;">Recibimos tus respuestas al <strong>AI Opportunity Assessment</strong>. Nuestro equipo las revisará y te contactará pronto para confirmar los siguientes pasos.</p>
-      <p style="margin:0 0 16px 0;">Si tienes cualquier duda mientras tanto, responde a este correo.</p>
+      <p style="margin:0 0 16px 0;">Si tienes cualquier duda mientras tanto, escríbenos a <a href="mailto:contact@itzam.ai" style="color:#c9a14a;">contact@itzam.ai</a>.</p>
       <p style="margin:24px 0 0 0;">— El equipo de Itzam.ai</p>
     `;
 
@@ -66,8 +66,8 @@ export function clientCompletedEmail(opts: {
       ? "We received your AI Opportunity Assessment"
       : "Recibimos tu AI Opportunity Assessment",
     text: en
-      ? `Hi ${opts.clientName},\n\nWe received your responses. We'll review them and get back to you to confirm the next steps.\n\n— Itzam.ai`
-      : `Hola ${opts.clientName},\n\nRecibimos tus respuestas. Las revisaremos y te contactaremos pronto.\n\n— Itzam.ai`,
+      ? `Hi ${opts.clientName},\n\nWe received your responses. We'll review them and get back to you to confirm the next steps.\n\nQuestions? Write to contact@itzam.ai.\n\n— Itzam.ai`
+      : `Hola ${opts.clientName},\n\nRecibimos tus respuestas. Las revisaremos y te contactaremos pronto.\n\n¿Dudas? Escríbenos a contact@itzam.ai.\n\n— Itzam.ai`,
     html: renderBrandedEmail({
       body,
       preheader: en
@@ -101,6 +101,53 @@ export function adminNotifyEmail(opts: {
     html: renderBrandedEmail({
       body,
       preheader: `${opts.clientName} completó el cuestionario.`,
+    }),
+  };
+}
+
+export function collaboratorInviteEmail(opts: {
+  inviterEmail: string;
+  inviteUrl: string;
+  clientName: string;
+  locale: "es" | "en";
+}): { subject: string; html: string; text: string } {
+  const inviter = htmlEscape(opts.inviterEmail);
+  const company = htmlEscape(opts.clientName);
+  const url = htmlEscape(opts.inviteUrl);
+  const en = opts.locale === "en";
+
+  const body = en
+    ? `
+      <p style="margin:0 0 16px 0;font-size:18px;font-weight:bold;">You've been invited to collaborate</p>
+      <p style="margin:0 0 16px 0;"><strong>${inviter}</strong> invited you to collaborate on the <strong>AI Opportunity Assessment</strong> for <strong>${company}</strong>.</p>
+      <p style="margin:0 0 16px 0;">Open the link below — if you don't have an account yet, you'll be asked to create one with this email.</p>
+      ${brandButton({ href: opts.inviteUrl, label: "Open the assessment" })}
+      <p style="margin:16px 0 8px 0;font-size:13px;color:#666666;">If the button doesn't work, copy and paste this URL:</p>
+      <p style="margin:0 0 16px 0;font-size:12px;color:#666666;word-break:break-all;">${url}</p>
+      <p style="margin:24px 0 0 0;font-size:13px;color:#666666;">Questions? Write to <a href="mailto:contact@itzam.ai" style="color:#c9a14a;">contact@itzam.ai</a>.</p>
+    `
+    : `
+      <p style="margin:0 0 16px 0;font-size:18px;font-weight:bold;">Te invitaron a colaborar</p>
+      <p style="margin:0 0 16px 0;"><strong>${inviter}</strong> te invitó a colaborar en el <strong>AI Opportunity Assessment</strong> de <strong>${company}</strong>.</p>
+      <p style="margin:0 0 16px 0;">Abre el enlace de abajo — si aún no tienes cuenta, te pediremos que crees una con este correo.</p>
+      ${brandButton({ href: opts.inviteUrl, label: "Abrir el assessment" })}
+      <p style="margin:16px 0 8px 0;font-size:13px;color:#666666;">Si el botón no funciona, copia y pega esta URL:</p>
+      <p style="margin:0 0 16px 0;font-size:12px;color:#666666;word-break:break-all;">${url}</p>
+      <p style="margin:24px 0 0 0;font-size:13px;color:#666666;">¿Dudas? Escríbenos a <a href="mailto:contact@itzam.ai" style="color:#c9a14a;">contact@itzam.ai</a>.</p>
+    `;
+
+  return {
+    subject: en
+      ? `${opts.inviterEmail} invited you to collaborate on ${opts.clientName}'s assessment`
+      : `${opts.inviterEmail} te invitó a colaborar en el assessment de ${opts.clientName}`,
+    text: en
+      ? `${opts.inviterEmail} invited you to collaborate on the AI Opportunity Assessment for ${opts.clientName}.\n\nOpen: ${opts.inviteUrl}\n\nQuestions? contact@itzam.ai`
+      : `${opts.inviterEmail} te invitó a colaborar en el AI Opportunity Assessment de ${opts.clientName}.\n\nAbrir: ${opts.inviteUrl}\n\n¿Dudas? contact@itzam.ai`,
+    html: renderBrandedEmail({
+      body,
+      preheader: en
+        ? `${opts.inviterEmail} invited you to collaborate on ${opts.clientName}.`
+        : `${opts.inviterEmail} te invitó a colaborar en ${opts.clientName}.`,
     }),
   };
 }
