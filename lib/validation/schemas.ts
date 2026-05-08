@@ -22,12 +22,14 @@ export const AnswersBatch = z.object({
 
 export const CreateQuestionnaire = z.object({
   client_name: z.string().trim().min(1).max(200),
+  client_company: z.string().trim().min(1).max(200),
   client_email: z.string().trim().toLowerCase().email().max(320),
   preferred_locale: z.enum(["es", "en"]).default("es"),
 }).strict();
 
 export const UpdateQuestionnaire = z.object({
   client_name: z.string().trim().min(1).max(200).optional(),
+  client_company: z.string().trim().min(1).max(200).optional(),
   client_email: z.string().trim().toLowerCase().email().max(320).optional(),
   preferred_locale: z.enum(["es", "en"]).optional(),
 }).strict();

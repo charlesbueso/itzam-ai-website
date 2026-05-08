@@ -53,6 +53,9 @@ export default async function SignupPage({
         <div className="rounded border border-[#c9a040]/40 bg-[#c9a040]/5 p-4 text-sm">
           <p className="font-medium">{dict.app.signup.checkEmailTitle}</p>
           <p className="mt-2 text-white/70">{dict.app.signup.checkEmailBody}</p>
+          <div aria-hidden className="my-4 h-px w-10 bg-[#c9a040]/60" />
+          <p className="text-white/70">{dict.app.signup.checkEmailNext}</p>
+          <p className="mt-3 text-xs text-white/50">{dict.app.signup.checkEmailClose}</p>
         </div>
       ) : (
         <>
