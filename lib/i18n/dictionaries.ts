@@ -12,6 +12,122 @@ export type Dictionary = {
     home: string;
     cta: string;
     switchLanguage: string;
+    openMenu: string;
+    closeMenu: string;
+    links: {
+      home: string;
+      services: string;
+      about: string;
+      contact: string;
+    };
+  };
+  common: {
+    learnMore: string;
+    requestQuote: string;
+    talkToUs: string;
+    backToTop: string;
+    comingSoon: string;
+    addOn: string;
+  };
+  home: {
+    manifesto: {
+      eyebrow: string;
+      heading1: string;
+      heading2: string;
+      body: string;
+      attribution: string;
+    };
+    servicesTeaser: {
+      eyebrow: string;
+      heading: string;
+      sub: string;
+      cta: string;
+    };
+    trust: {
+      eyebrow: string;
+      heading: string;
+      items: { title: string; body: string }[];
+    };
+    contact: {
+      eyebrow: string;
+      heading: string;
+      sub: string;
+    };
+  };
+  services: {
+    meta: { title: string; description: string };
+    eyebrow: string;
+    heading1: string;
+    heading2: string;
+    intro: string;
+    tocLabel: string;
+    sectionLabels: {
+      whatIs: string;
+      deliverables: string;
+      tech: string;
+      target: string;
+    };
+    items: {
+      slug: string;
+      number: string;
+      title: string;
+      tagline: string;
+      whatIs: string;
+      target?: string;
+      deliverables: string[];
+      tech: string[];
+      callout?: { label: string; title: string; body: string };
+    }[];
+    closing: {
+      heading: string;
+      body: string;
+      cta: string;
+    };
+  };
+  about: {
+    meta: { title: string; description: string };
+    hero: {
+      eyebrow: string;
+      heading1: string;
+      heading2: string;
+      sub: string;
+    };
+    conviction: {
+      eyebrow: string;
+      heading: string;
+      values: { title: string; body: string }[];
+    };
+    team: {
+      eyebrow: string;
+      heading: string;
+      sub: string;
+      members: { name: string; role: string; bio: string }[];
+    };
+    closing: {
+      heading: string;
+      cta: string;
+    };
+  };
+  contact: {
+    meta: { title: string; description: string };
+    eyebrow: string;
+    heading: string;
+    sub: string;
+    direct: {
+      label: string;
+      email: string;
+      responseLabel: string;
+      response: string;
+      locationLabel: string;
+      location: string;
+    };
+  };
+  footer: {
+    tagline: string;
+    sectionsLabel: string;
+    contactLabel: string;
+    languageLabel: string;
+    rights: string;
   };
   hero: {
     tag1: string;
@@ -191,6 +307,271 @@ export const dictionaries: Record<Locale, Dictionary> = {
       home: "Itzam.ai home",
       cta: "Get early access",
       switchLanguage: "Switch language",
+      openMenu: "Open menu",
+      closeMenu: "Close menu",
+      links: {
+        home: "Home",
+        services: "Services",
+        about: "About",
+        contact: "Contact",
+      },
+    },
+    common: {
+      learnMore: "Learn more",
+      requestQuote: "Request a quote",
+      talkToUs: "Talk to us",
+      backToTop: "Back to top",
+      comingSoon: "Coming soon",
+      addOn: "Add-on",
+    },
+    home: {
+      manifesto: {
+        eyebrow: "Our name",
+        heading1: "Itzam was the Mayan",
+        heading2: "god of knowledge.",
+        body: "We're a Mexican AI agency bringing intelligent systems to Latin America. Senior engineers, real models, products that ship in 30 days — not 30 months.",
+        attribution: "— The Itzam.ai team",
+      },
+      servicesTeaser: {
+        eyebrow: "What we do",
+        heading: "Four ways we move the needle.",
+        sub: "From a 2-week diagnostic to AI assistants embedded in your operation. Pick where you are.",
+        cta: "Learn more",
+      },
+      trust: {
+        eyebrow: "Why Itzam",
+        heading: "Built for operators, not slide decks.",
+        items: [
+          {
+            title: "Tangible deliverables",
+            body: "Every engagement ends with something working — not a strategy document gathering dust.",
+          },
+          {
+            title: "Bilingual senior team",
+            body: "Mexican founders, U.S. and LATAM enterprise experience. Same conversation in EN or ES.",
+          },
+          {
+            title: "AI with judgment",
+            body: "We pick the simplest stack that solves your problem. No model worship, no hype tax.",
+          },
+        ],
+      },
+      contact: {
+        eyebrow: "Let's talk",
+        heading: "Tell us what you're building.",
+        sub: "Or what's slowing you down. We'll come back with a clear-eyed take and a concrete path forward.",
+      },
+    },
+    services: {
+      meta: {
+        title: "Services",
+        description:
+          "From AI Opportunity Assessments to production-grade AI assistants — Itzam.ai's full service catalog for LATAM operators.",
+      },
+      eyebrow: "Services",
+      heading1: "From assessment",
+      heading2: "to production.",
+      intro:
+        "Four engagements, designed to compound. Start with a diagnostic, scale into deployed systems. Every deliverable is something your team can use on day one.",
+      tocLabel: "Jump to",
+      sectionLabels: {
+        whatIs: "What it is",
+        deliverables: "Deliverables",
+        tech: "Technical requirements",
+        target: "Best for",
+      },
+      items: [
+        {
+          slug: "service-1",
+          number: "01",
+          title: "AI Opportunity Assessment",
+          tagline: "A 2-week diagnostic that turns ambition into a roadmap.",
+          whatIs:
+            "A two-week engagement to identify, prioritize, and quantify AI opportunities across your commercial operation. We map processes, surface quick wins, and hand you a clear plan with realistic timelines and costs.",
+          target: "Companies that know AI matters but need a credible plan before committing budget.",
+          deliverables: [
+            "10–12 page report with executive summary",
+            "Process map of your current commercial operation",
+            "AI Opportunity Map with 3–5 prioritized areas",
+            "Quick Wins vs. Strategic Projects breakdown",
+            "Recommended tools and stack per opportunity",
+            "Estimated timelines and costs per initiative",
+          ],
+          tech: [
+            "Intake form + context call with your team",
+            "Senior CTO review of every recommendation",
+            "Realistic feasibility check on every proposed solution",
+          ],
+        },
+        {
+          slug: "service-2",
+          number: "02",
+          title: "Sales Playbook Generator",
+          tagline: "An AI-built sales kit, customized to your industries and cycle.",
+          whatIs:
+            "A complete sales-enablement kit, generated and curated for your company, your target industries, and your sales cycle. Everything your team needs to sell consistently — built in days, not months.",
+          target: "Sales teams selling into multiple industries that need a unified, repeatable motion.",
+          deliverables: [
+            "One-pager per product",
+            "Executive deck (PowerPoint)",
+            "Sales process guide",
+            "Per industry: pitch, top-10 objections, cold-call script, follow-up script, competitor analysis",
+            "Discovery questions and email templates",
+            "Onboarding guide for new hires",
+          ],
+          tech: [
+            "Claude API for content generation",
+            "Quality and coherence review by our team",
+            "No integrations — pure content engineering",
+          ],
+          callout: {
+            label: "Add-on",
+            title: "RFP Generator",
+            body: "Upload an RFP (PDF or Word). The system extracts the structure and generates a customized proposal automatically. Powered by Claude API + PyMuPDF document parsing.",
+          },
+        },
+        {
+          slug: "service-3",
+          number: "03",
+          title: "Customer Support Engine",
+          tagline: "An AI agent that handles your customer support — 24/7, in your voice.",
+          whatIs:
+            "A production-grade AI support system that answers customers automatically on WhatsApp Business and your web chat, trained on your company's knowledge. Configurable escalation, real handoff to humans, measurable performance.",
+          target: "Companies with high-volume support that wants faster response times without losing quality.",
+          deliverables: [
+            "AI agent live on WhatsApp Business + web chat",
+            "Structured knowledge base built from your content",
+            "Escalation flow configured to your process",
+            "Embeddable web chat widget",
+            "Team training and operational runbook",
+          ],
+          tech: [
+            "WhatsApp Business API (Meta)",
+            "Claude API as the response engine",
+            "RAG over your knowledge base — Supabase + pgvector + LangChain",
+            "Optional channels: voice, email (quoted separately)",
+          ],
+          callout: {
+            label: "Coming soon",
+            title: "Pro tier — CRM integration",
+            body: "Native integration with HubSpot or Salesforce so support context flows directly into your CRM.",
+          },
+        },
+        {
+          slug: "service-4",
+          number: "04",
+          title: "Itzam Business Brain Lab",
+          tagline: "Your company's knowledge, available 24/7 to your team or your channel.",
+          whatIs:
+            "An AI assistant with your company's identity, trained on your internal knowledge — sales, products, pricing, processes, channel, operations. Available 24/7 to your team, your partners, or both.",
+          target: "Companies whose knowledge is locked in slides, drives, and a few key people.",
+          deliverables: [
+            "AI assistant with your branding (name, colors, logo)",
+            "Topic chips configured by category",
+            "Structured knowledge base with cited sources",
+            "Web access via private link or credential",
+            "Operational guide and update workflow",
+          ],
+          tech: [
+            "Claude API as the response engine",
+            "RAG over your knowledge base — same stack as Customer Support Engine",
+            "Branded chat frontend",
+            "Lightweight authentication (private link or credential)",
+            "Hosting and deployment included",
+          ],
+          callout: {
+            label: "Two variants",
+            title: "Internal Brain · Channel Brain",
+            body: "Internal: for sales and operations teams. Channel: for partners and resellers. Same core, different audience and content.",
+          },
+        },
+      ],
+      closing: {
+        heading: "Not sure which one fits?",
+        body: "Tell us where you are and we'll point to the right starting move — or build a custom engagement.",
+        cta: "Talk to us",
+      },
+    },
+    about: {
+      meta: {
+        title: "About",
+        description:
+          "Itzam.ai is a Mexican AI agency named after the Mayan god of knowledge. We bring production-grade intelligent systems to Latin America.",
+      },
+      hero: {
+        eyebrow: "About Itzam.ai",
+        heading1: "Named for the Mayan",
+        heading2: "god of knowledge.",
+        sub: "We're a Mexican AI agency for LATAM operators. Our job is to turn intelligence — the kind that compounds — into systems your team uses every day.",
+      },
+      conviction: {
+        eyebrow: "Our conviction",
+        heading: "Pragmatism over theater.",
+        values: [
+          {
+            title: "Pragmatism",
+            body: "The simplest stack that solves the problem. No model worship.",
+          },
+          {
+            title: "Measurable execution",
+            body: "Every engagement ends with something working — and a number to point at.",
+          },
+          {
+            title: "AI with judgment",
+            body: "Models are tools. Judgment is the product.",
+          },
+          {
+            title: "Compounding partnerships",
+            body: "We invest in clients we want to keep working with for years.",
+          },
+        ],
+      },
+      team: {
+        eyebrow: "Founding team",
+        heading: "A father-son team. Two careers, one playbook.",
+        sub: "Twenty-five years of LATAM enterprise GTM, married to a CTO who builds AI-native systems. We co-found everything we ship.",
+        members: [
+          {
+            name: "Carlos Bueso",
+            role: "CEO & Co-founder",
+            bio: "Senior technology and commercial leader with 25+ years scaling AI-native, cloud, and data platforms across Latin America and North America. Built and led high-performing teams that accelerate market expansion, modernize GTM models, and scale partner ecosystems for cloud and AI-led transformation. Pragmatic and results-first. Experience at Cisco, Rackspace, Microsoft, and Experis.",
+          },
+          {
+            name: "Carlos Adrián Bueso",
+            role: "CTO & Co-founder",
+            bio: "Software engineer and computer scientist focused on AI-driven systems at the intersection of data, product, and creativity. Co-Founder & CTO of Alquimia Studio, where he led the development of full-stack platforms, LLM-powered applications, and cloud infrastructure for startups and enterprise clients. Previously a quantitative software engineer at AllianceBernstein. Currently developing Voxcentra — an AI-native project exploring generative cinema and autonomous agents.",
+          },
+        ],
+      },
+      closing: {
+        heading: "Let's build something real.",
+        cta: "Talk to us",
+      },
+    },
+    contact: {
+      meta: {
+        title: "Contact",
+        description:
+          "Tell us what you're building, or what's slowing you down. We'll come back within 48 hours.",
+      },
+      eyebrow: "Contact",
+      heading: "Let's talk.",
+      sub: "Tell us what you're building, or what's slowing you down. We'll come back with a clear-eyed take and a concrete path forward.",
+      direct: {
+        label: "Direct contact",
+        email: "contact@itzam.ai",
+        responseLabel: "Response time",
+        response: "Within 48 hours, every business day.",
+        locationLabel: "Based in",
+        location: "Mexico City — working across LATAM.",
+      },
+    },
+    footer: {
+      tagline: "Intelligence, deployed — across LATAM.",
+      sectionsLabel: "Sections",
+      contactLabel: "Contact",
+      languageLabel: "Language",
+      rights: "All rights reserved.",
     },
     hero: {
       tag1: "AI Agency",
@@ -381,6 +762,271 @@ export const dictionaries: Record<Locale, Dictionary> = {
       home: "Inicio Itzam.ai",
       cta: "Acceso anticipado",
       switchLanguage: "Cambiar idioma",
+      openMenu: "Abrir menú",
+      closeMenu: "Cerrar menú",
+      links: {
+        home: "Inicio",
+        services: "Servicios",
+        about: "Nosotros",
+        contact: "Contacto",
+      },
+    },
+    common: {
+      learnMore: "Conocer más",
+      requestQuote: "Solicitar cotización",
+      talkToUs: "Hablemos",
+      backToTop: "Volver arriba",
+      comingSoon: "Próximamente",
+      addOn: "Add-on",
+    },
+    home: {
+      manifesto: {
+        eyebrow: "Nuestro nombre",
+        heading1: "Itzam fue el dios maya",
+        heading2: "del conocimiento.",
+        body: "Somos una agencia mexicana de IA llevando sistemas inteligentes a Latinoamérica. Ingenieros senior, modelos reales, productos que entran en producción en 30 días — no en 30 meses.",
+        attribution: "— El equipo de Itzam.ai",
+      },
+      servicesTeaser: {
+        eyebrow: "Lo que hacemos",
+        heading: "Cuatro formas de mover la aguja.",
+        sub: "Desde un diagnóstico de 2 semanas hasta asistentes de IA integrados en tu operación. Empieza donde estás.",
+        cta: "Conocer más",
+      },
+      trust: {
+        eyebrow: "Por qué Itzam",
+        heading: "Construido para operadores, no para presentaciones.",
+        items: [
+          {
+            title: "Entregables tangibles",
+            body: "Cada proyecto termina con algo funcionando — no con un documento de estrategia juntando polvo.",
+          },
+          {
+            title: "Equipo senior bilingüe",
+            body: "Fundadores mexicanos con experiencia enterprise en LATAM y EE.UU. Misma conversación en EN o ES.",
+          },
+          {
+            title: "IA con criterio",
+            body: "Elegimos el stack más simple que resuelve tu problema. Sin idolatría de modelos, sin impuesto al hype.",
+          },
+        ],
+      },
+      contact: {
+        eyebrow: "Hablemos",
+        heading: "Cuéntanos qué estás construyendo.",
+        sub: "O qué te está frenando. Volvemos con una lectura clara y un camino concreto.",
+      },
+    },
+    services: {
+      meta: {
+        title: "Servicios",
+        description:
+          "Desde AI Opportunity Assessments hasta asistentes de IA en producción — el catálogo completo de servicios de Itzam.ai para operadores en LATAM.",
+      },
+      eyebrow: "Servicios",
+      heading1: "Del diagnóstico",
+      heading2: "a producción.",
+      intro:
+        "Cuatro engagements, diseñados para componerse. Empieza con un diagnóstico, escala a sistemas desplegados. Cada entregable es algo que tu equipo puede usar desde el día uno.",
+      tocLabel: "Ir a",
+      sectionLabels: {
+        whatIs: "Qué es",
+        deliverables: "Entregables",
+        tech: "Requerimientos técnicos",
+        target: "Ideal para",
+      },
+      items: [
+        {
+          slug: "service-1",
+          number: "01",
+          title: "AI Opportunity Assessment",
+          tagline: "Diagnóstico de 2 semanas que convierte ambición en hoja de ruta.",
+          whatIs:
+            "Engagement de dos semanas para identificar, priorizar y cuantificar oportunidades de IA en tu operación comercial. Mapeamos procesos, encontramos quick wins y te entregamos un plan claro con tiempos y costos realistas.",
+          target: "Empresas que saben que la IA importa pero necesitan un plan creíble antes de comprometer presupuesto.",
+          deliverables: [
+            "Reporte de 10–12 páginas con resumen ejecutivo",
+            "Mapa de procesos de tu operación comercial",
+            "AI Opportunity Map con 3–5 áreas priorizadas",
+            "Quick Wins vs. Proyectos Estratégicos",
+            "Herramientas y stack recomendado por oportunidad",
+            "Tiempos y costos estimados por iniciativa",
+          ],
+          tech: [
+            "Intake form + llamada de contexto con tu equipo",
+            "Revisión senior por nuestro CTO de cada recomendación",
+            "Validación de viabilidad realista en cada solución",
+          ],
+        },
+        {
+          slug: "service-2",
+          number: "02",
+          title: "Sales Playbook Generator",
+          tagline: "Kit de ventas hecho con IA, personalizado a tus industrias y ciclo.",
+          whatIs:
+            "Kit completo de habilitación comercial, generado y curado para tu empresa, tus industrias objetivo y tu ciclo de venta. Todo lo que tu equipo necesita para vender consistentemente — construido en días, no en meses.",
+          target: "Equipos comerciales que venden a múltiples industrias y necesitan un proceso unificado y repetible.",
+          deliverables: [
+            "One-pager por producto",
+            "Deck ejecutivo en PowerPoint",
+            "Guía del proceso de ventas",
+            "Por industria: pitch, top 10 de objeciones, script de llamada en frío, script de seguimiento, análisis de competidores",
+            "Preguntas de discovery y plantillas de email",
+            "Guía de onboarding para nuevos vendedores",
+          ],
+          tech: [
+            "Claude API para generación de contenido",
+            "Revisión de calidad y coherencia por nuestro equipo",
+            "Sin integraciones — generación pura de contenido",
+          ],
+          callout: {
+            label: "Add-on",
+            title: "RFP Generator",
+            body: "Sube un RFP (PDF o Word). El sistema extrae la estructura y genera una propuesta personalizada automáticamente. Powered by Claude API + parsing con PyMuPDF.",
+          },
+        },
+        {
+          slug: "service-3",
+          number: "03",
+          title: "Customer Support Engine",
+          tagline: "Un agente de IA que atiende a tus clientes — 24/7, en tu voz.",
+          whatIs:
+            "Sistema de atención al cliente en producción que responde automáticamente por WhatsApp Business y chat web, entrenado con el conocimiento de tu empresa. Escalación configurable, handoff real a humanos, desempeño medible.",
+          target: "Empresas con alto volumen de soporte que buscan reducir tiempos de respuesta sin perder calidad.",
+          deliverables: [
+            "Agente de IA en vivo en WhatsApp Business + chat web",
+            "Knowledge base estructurada con tu contenido",
+            "Flujo de escalación configurado a tu proceso",
+            "Widget de chat web embebible",
+            "Capacitación al equipo y runbook operativo",
+          ],
+          tech: [
+            "WhatsApp Business API (Meta)",
+            "Claude API como motor de respuestas",
+            "RAG sobre tu knowledge base — Supabase + pgvector + LangChain",
+            "Canales opcionales: voz, email (cotización aparte)",
+          ],
+          callout: {
+            label: "Próximamente",
+            title: "Tier Pro — Integración con CRM",
+            body: "Integración nativa con HubSpot o Salesforce para que el contexto del soporte fluya directo a tu CRM.",
+          },
+        },
+        {
+          slug: "service-4",
+          number: "04",
+          title: "Itzam Business Brain Lab",
+          tagline: "El conocimiento de tu empresa, disponible 24/7 a tu equipo o tu canal.",
+          whatIs:
+            "Asistente de IA con la identidad de tu empresa, entrenado con todo tu conocimiento interno — ventas, productos, precios, procesos, canal, operaciones. Disponible 24/7 para tu equipo, tus partners, o ambos.",
+          target: "Empresas cuyo conocimiento está atrapado en presentaciones, drives y un par de personas clave.",
+          deliverables: [
+            "Asistente de IA con tu branding (nombre, colores, logo)",
+            "Topic chips configurados por categoría",
+            "Knowledge base estructurada con fuentes citadas",
+            "Acceso web por link privado o credencial",
+            "Guía operativa y workflow de actualización",
+          ],
+          tech: [
+            "Claude API como motor de respuestas",
+            "RAG sobre tu knowledge base — mismo stack que Customer Support Engine",
+            "Frontend de chat con tu branding",
+            "Autenticación ligera (link privado o credencial)",
+            "Hosting y despliegue incluidos",
+          ],
+          callout: {
+            label: "Dos variantes",
+            title: "Brain Interno · Brain de Canal",
+            body: "Interno: para equipos de ventas y operaciones. De canal: para partners y resellers. Mismo core, audiencia y contenido distintos.",
+          },
+        },
+      ],
+      closing: {
+        heading: "¿No sabes cuál te aplica?",
+        body: "Cuéntanos dónde estás y te apuntamos al siguiente paso correcto — o construimos un engagement a la medida.",
+        cta: "Hablemos",
+      },
+    },
+    about: {
+      meta: {
+        title: "Nosotros",
+        description:
+          "Itzam.ai es una agencia mexicana de IA, nombrada por el dios maya del conocimiento. Llevamos sistemas inteligentes de grado productivo a Latinoamérica.",
+      },
+      hero: {
+        eyebrow: "Sobre Itzam.ai",
+        heading1: "Llamados como el dios",
+        heading2: "maya del conocimiento.",
+        sub: "Somos una agencia mexicana de IA para operadores de LATAM. Nuestro trabajo es convertir inteligencia — la que compone — en sistemas que tu equipo usa todos los días.",
+      },
+      conviction: {
+        eyebrow: "Nuestra convicción",
+        heading: "Pragmatismo sobre teatro.",
+        values: [
+          {
+            title: "Pragmatismo",
+            body: "El stack más simple que resuelve el problema. Sin idolatría de modelos.",
+          },
+          {
+            title: "Ejecución medible",
+            body: "Cada engagement termina con algo funcionando — y un número al cual apuntar.",
+          },
+          {
+            title: "IA con criterio",
+            body: "Los modelos son herramientas. El criterio es el producto.",
+          },
+          {
+            title: "Alianzas que componen",
+            body: "Invertimos en clientes con los que queremos trabajar por años.",
+          },
+        ],
+      },
+      team: {
+        eyebrow: "Equipo fundador",
+        heading: "Padre e hijo. Dos carreras, un mismo playbook.",
+        sub: "Veinticinco años de GTM enterprise en LATAM, casados con un CTO que construye sistemas AI-native. Co-fundamos todo lo que entregamos.",
+        members: [
+          {
+            name: "Carlos Bueso",
+            role: "CEO y Co-fundador",
+            bio: "Líder senior de tecnología y comercial con más de 25 años escalando plataformas AI-native, cloud y datos en Latinoamérica y Norteamérica. Construyó y lideró equipos de alto desempeño que aceleran expansión de mercado, modernizan modelos GTM y escalan ecosistemas de partners para transformación cloud y AI-led. Pragmático y orientado a resultados. Experiencia en Cisco, Rackspace, Microsoft y Experis.",
+          },
+          {
+            name: "Carlos Adrián Bueso",
+            role: "CTO y Co-fundador",
+            bio: "Ingeniero de software y científico computacional enfocado en sistemas de IA en la intersección de datos, producto y creatividad. Co-fundador y CTO de Alquimia Studio, donde lideró el desarrollo de plataformas full-stack, aplicaciones LLM e infraestructura cloud para startups y clientes enterprise. Previamente ingeniero cuantitativo en AllianceBernstein. Actualmente desarrollando Voxcentra — un proyecto AI-native que explora cine generativo y agentes autónomos.",
+          },
+        ],
+      },
+      closing: {
+        heading: "Construyamos algo real.",
+        cta: "Hablemos",
+      },
+    },
+    contact: {
+      meta: {
+        title: "Contacto",
+        description:
+          "Cuéntanos qué estás construyendo, o qué te está frenando. Volvemos en menos de 48 horas.",
+      },
+      eyebrow: "Contacto",
+      heading: "Hablemos.",
+      sub: "Cuéntanos qué estás construyendo, o qué te está frenando. Volvemos con una lectura clara y un camino concreto.",
+      direct: {
+        label: "Contacto directo",
+        email: "contact@itzam.ai",
+        responseLabel: "Tiempo de respuesta",
+        response: "En menos de 48 horas, todo día hábil.",
+        locationLabel: "Ubicación",
+        location: "Ciudad de México — operando en todo LATAM.",
+      },
+    },
+    footer: {
+      tagline: "Inteligencia, en producción — en toda LATAM.",
+      sectionsLabel: "Secciones",
+      contactLabel: "Contacto",
+      languageLabel: "Idioma",
+      rights: "Todos los derechos reservados.",
     },
     hero: {
       tag1: "Agencia de IA",

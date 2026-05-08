@@ -151,3 +151,39 @@ export function collaboratorInviteEmail(opts: {
     }),
   };
 }
+
+export function contactNotification(opts: {
+  name: string;
+  email: string;
+  company: string;
+  role: string;
+  use_case: string;
+}): { subject: string; html: string; text: string } {
+  const name = htmlEscape(opts.name);
+  const email = htmlEscape(opts.email);
+  const company = htmlEscape(opts.company);
+  const role = htmlEscape(opts.role);
+  const useCase = htmlEscape(opts.use_case).replace(/\n/g, "<br/>");
+
+  const body = `
+    <p style="margin:0 0 16px 0;font-size:18px;font-weight:bold;">Nueva solicitud de contacto</p>
+    <p style="margin:0 0 8px 0;"><strong>Nombre:</strong> ${name}</p>
+    <p style="margin:0 0 8px 0;"><strong>Email:</strong> <a href="mailto:${email}" style="color:#c9a14a;">${email}</a></p>
+    <p style="margin:0 0 8px 0;"><strong>Empresa:</strong> ${company}</p>
+    <p style="margin:0 0 16px 0;"><strong>Rol:</strong> ${role}</p>
+    <p style="margin:0 0 8px 0;font-size:13px;color:#666666;text-transform:uppercase;letter-spacing:0.08em;">Mensaje</p>
+    <p style="margin:0 0 16px 0;padding:14px 16px;background:#f6f5f1;border-left:3px solid #c9a14a;border-radius:4px;">${useCase}</p>
+    ${brandButton({ href: `mailto:${opts.email}`, label: "Responder" })}
+  `;
+
+  return {
+    subject: `[Itzam] Nuevo contacto — ${opts.name} (${opts.company})`,
+    text: `Nuevo contacto:\n\nNombre: ${opts.name}\nEmail: ${opts.email}\nEmpresa: ${opts.company}\nRol: ${opts.role}\n\nMensaje:\n${opts.use_case}`,
+    html: renderBrandedEmail({
+      body,
+      preheader: `${opts.name} de ${opts.company} envió un mensaje.`,
+    }),
+  };
+}
+
+
