@@ -4,7 +4,7 @@
 
 <p align="center">
   <strong>Intelligence, deployed.</strong><br/>
-  The AI agency for LATAM operators. Strategy, systems, and shipped products. In 30 days.
+  The AI agency for sales teams in Mexico and LatAm. Diagnosis, implementation, and results — in weeks.
 </p>
 
 ---

@@ -4,6 +4,8 @@ import Link from "next/link";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 import RevealText from "@/components/RevealText";
+import LoopVideo from "@/components/LoopVideo";
+import { ASSETS } from "@/lib/assets";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
 export default function ServicesPageClient() {
@@ -13,45 +15,71 @@ export default function ServicesPageClient() {
   return (
     <main>
       {/* ───────────── Hero ───────────── */}
-      <section className="relative w-full bg-black px-6 pb-20 pt-44 md:px-10 md:pb-28 md:pt-52">
-        <div className="mx-auto w-full max-w-[90rem]">
-          <Reveal as="span">
-            <span className="inline-flex items-center rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-white/80">
-              {t.services.eyebrow}
-            </span>
-          </Reveal>
+      <section className="relative w-full overflow-hidden bg-black">
+        {/* Desktop: video pinned to the right half, full-height of the hero */}
+        <div
+          className="pointer-events-none absolute inset-y-0 right-0 hidden md:block md:w-1/2"
+          aria-hidden="true"
+        >
+          <LoopVideo
+            src={ASSETS.serviceSalesPlaybook}
+            rate={0.6}
+            className="h-full w-full object-cover"
+          />
+          {/* Soft horizontal fade so text side blends in */}
+          <div className="absolute inset-0 bg-gradient-to-l from-transparent via-black/10 to-black" />
+        </div>
 
-          <h1 className="mt-6 text-5xl font-semibold leading-[0.95] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-8xl">
-            <RevealText as="span">{t.services.heading1}</RevealText>
-            <br />
-            <RevealText as="span" delay={0.15}>
-              {t.services.heading2}
-            </RevealText>
-          </h1>
+        {/* Mobile: full-bleed background video behind text */}
+        <div className="pointer-events-none absolute inset-0 md:hidden" aria-hidden="true">
+          <LoopVideo
+            src={ASSETS.serviceSalesPlaybook}
+            rate={0.6}
+            className="h-full w-full object-cover opacity-55"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/40 to-black" />
+        </div>
 
-          <Reveal
-            as="p"
-            className="mt-8 max-w-2xl text-lg font-medium text-white/75 md:text-xl"
-          >
-            {t.services.intro}
-          </Reveal>
+        <div className="relative mx-auto w-full max-w-[90rem] px-6 pb-20 pt-44 md:flex md:min-h-[100svh] md:items-center md:px-10 md:pb-28 md:pt-52">
+          <div className="md:w-1/2 md:pr-10">
+            <Reveal as="span">
+              <span className="inline-flex items-center rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-white/80 backdrop-blur-sm">
+                {t.services.eyebrow}
+              </span>
+            </Reveal>
 
-          {/* TOC */}
-          <Reveal className="mt-14 flex flex-wrap items-center gap-3" stagger={0.06}>
-            <span className="text-xs font-medium uppercase tracking-[0.18em] text-white/40">
-              {t.services.tocLabel}
-            </span>
-            {services.map((s) => (
-              <a
-                key={s.slug}
-                href={`#${s.slug}`}
-                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-white/80 transition hover:border-[#c9a040] hover:text-[#c9a040]"
-              >
-                <span className="font-mono text-xs text-[#c9a040]">{s.number}</span>
-                <span>{s.title}</span>
-              </a>
-            ))}
-          </Reveal>
+            <h1 className="mt-6 text-5xl font-semibold leading-[0.95] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-8xl">
+              <RevealText as="span">{t.services.heading1}</RevealText>
+              <br />
+              <RevealText as="span" delay={0.15}>
+                {t.services.heading2}
+              </RevealText>
+            </h1>
+
+            <Reveal
+              as="p"
+              className="mt-8 max-w-xl text-lg font-medium text-white/85 md:text-xl"
+            >
+              {t.services.intro}
+            </Reveal>
+
+            {/* TOC */}
+            <Reveal className="mt-12 flex flex-wrap items-center gap-3" stagger={0.06}>
+              <span className="text-xs font-medium uppercase tracking-[0.18em] text-white/40">
+                {t.services.tocLabel}
+              </span>
+              {services.map((s) => (
+                <a
+                  key={s.slug}
+                  href={`#${s.slug}`}
+                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm text-white/80 backdrop-blur-sm transition hover:border-[#c9a040] hover:text-[#c9a040]"
+                >
+                  <span className="font-mono text-xs text-[#c9a040]">{s.number}</span>
+                  <span>{s.title}</span>
+                </a>
+              ))}
+            </Reveal>
+          </div>
         </div>
       </section>
 

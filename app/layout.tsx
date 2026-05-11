@@ -6,22 +6,28 @@ import Analytics from "@/components/Analytics";
 
 const SITE_URL = "https://itzam.ai";
 const SITE_NAME = "Itzam.ai";
-const TITLE = "Itzam.ai — Intelligence, deployed.";
+const TITLE = "Itzam.ai — AI for Sales Teams in Mexico and LatAm.";
 const DESCRIPTION =
-  "Itzam.ai is the AI agency for LATAM operators. Senior engineers design, build, and ship production-grade AI systems — agents, copilots, and automations — in 30 days, not 30 months.";
+  "Itzam.AI automates your sales operation with AI — in weeks, not months. From a 2-week diagnostic to deployed AI systems, built for commercial teams in Mexico and LatAm.";
 const KEYWORDS = [
+  "AI for sales teams",
+  "IA para equipos de ventas",
   "AI agency",
   "AI agency LATAM",
   "AI agency Mexico",
   "agencia de IA",
   "agencia de IA México",
-  "agencia de IA LATAM",
+  "agencia de IA LatAm",
   "consultoría de IA",
   "AI consulting",
   "AI consulting Mexico",
-  "AI consulting LATAM",
-  "production AI systems",
-  "sistemas de IA en producción",
+  "AI consulting LatAm",
+  "AI Opportunity Assessment",
+  "Sales Playbook Generator",
+  "Customer Support Engine",
+  "Business Brain Lab",
+  "sales automation",
+  "automatización de ventas",
   "AI agents",
   "agentes de IA",
   "AI copilots",
@@ -30,7 +36,6 @@ const KEYWORDS = [
   "automatización con IA",
   "enterprise AI",
   "IA empresarial",
-  "machine learning agency",
   "LLM consulting",
   "Itzam",
   "Itzam.ai",
@@ -154,16 +159,18 @@ const organizationJsonLd = {
   ],
   serviceType: [
     "AI Opportunity Assessment",
+    "Sales Playbook Generator",
+    "Customer Support Engine",
+    "Itzam Business Brain Lab",
     "AI Agent Development",
     "AI Copilot Development",
     "AI Automation",
-    "Production AI Systems",
   ],
   contactPoint: [
     {
       "@type": "ContactPoint",
       contactType: "sales",
-      email: "hello@itzam.ai",
+      email: "contact@itzam.ai",
       availableLanguage: ["en", "es"],
       areaServed: ["MX", "US", "LATAM"],
     },
