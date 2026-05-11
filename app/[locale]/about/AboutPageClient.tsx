@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 import RevealText from "@/components/RevealText";
+import LoopVideo from "@/components/LoopVideo";
 import { ASSETS } from "@/lib/assets";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 
@@ -61,42 +62,39 @@ export default function AboutPageClient() {
   return (
     <main>
       {/* ───────────── Hero ───────────── */}
-      <section className="relative w-full bg-black px-6 pb-20 pt-44 md:px-10 md:pb-28 md:pt-52">
-        <div className="mx-auto w-full max-w-[90rem]">
+      <section className="relative w-full overflow-hidden bg-black px-6 pb-20 pt-44 md:px-10 md:pb-28 md:pt-52">
+        {/* Full-bleed background video */}
+        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+          <LoopVideo
+            src={ASSETS.serviceOpportunity}
+            rate={0.6}
+            className="h-full w-full object-cover opacity-50 md:opacity-60"
+          />
+          {/* Darkening overlay for legibility */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/45 to-black md:bg-gradient-to-r md:from-black/80 md:via-black/40 md:to-black/10" />
+        </div>
+
+        <div className="relative mx-auto w-full max-w-[90rem]">
           <Reveal as="span">
-            <span className="inline-flex items-center rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-white/80">
+            <span className="inline-flex items-center rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-white/80 backdrop-blur-sm">
               {t.about.hero.eyebrow}
             </span>
           </Reveal>
 
-          <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-12 md:items-center">
-            <div className="md:col-span-8">
-              <h1 className="text-5xl font-semibold leading-[0.95] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-8xl">
-                <RevealText as="span">{t.about.hero.heading1}</RevealText>
-                <br />
-                <RevealText as="span" delay={0.15}>
-                  {t.about.hero.heading2}
-                </RevealText>
-              </h1>
-              <Reveal
-                as="p"
-                className="mt-8 max-w-2xl text-lg font-medium text-white/75 md:text-xl"
-              >
-                {t.about.hero.sub}
-              </Reveal>
-            </div>
-
-            <div className="md:col-span-4">
-              <Reveal className="flex items-start justify-start md:justify-end">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={ASSETS.logoGold}
-                  alt=""
-                  aria-hidden="true"
-                  className="h-32 w-32 md:h-40 md:w-40"
-                />
-              </Reveal>
-            </div>
+          <div className="mt-8 max-w-3xl">
+            <h1 className="text-5xl font-semibold leading-[0.95] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-8xl">
+              <RevealText as="span">{t.about.hero.heading1}</RevealText>
+              <br />
+              <RevealText as="span" delay={0.15}>
+                {t.about.hero.heading2}
+              </RevealText>
+            </h1>
+            <Reveal
+              as="p"
+              className="mt-8 max-w-2xl text-lg font-medium text-white/85 md:text-xl"
+            >
+              {t.about.hero.sub}
+            </Reveal>
           </div>
         </div>
       </section>
