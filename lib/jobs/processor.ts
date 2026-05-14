@@ -3,6 +3,7 @@ import "server-only";
 import { getSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getResend, RESEND_FROM, RESEND_REPLY_TO, safeHeader } from "@/lib/email/resend";
 import { adminNotifyEmail, clientCompletedEmail } from "@/lib/email/templates";
+import { upsertContact, createDealForContact, nameFrom } from "@/lib/hubspot/client";
 
 const MAX_BATCH = 20;
 
@@ -74,7 +75,7 @@ export async function processJobs(opts: { limit?: number; questionnaireId?: stri
   return { processed };
 }
 
-type JobKind = "client_folder" | "drive" | "client_email" | "admin_email";
+type JobKind = "client_folder" | "drive" | "client_email" | "admin_email" | "hubspot";
 
 async function runJob(kind: JobKind, questionnaireId: string) {
   const supabase = getSupabaseAdminClient();
@@ -190,6 +191,42 @@ async function runJob(kind: JobKind, questionnaireId: string) {
       text: tpl.text,
     });
     if (err) throw new Error(`resend admin: ${err.message}`);
+    return;
+  }
+
+  if (kind === "hubspot") {
+    // Upsert the client as a contact, then create an opportunity-stage deal.
+    // The job throws on any failure so the outbox retries with backoff.
+    const { firstname, lastname } = nameFrom(q.client_name as string);
+    const contact = await upsertContact({
+      email: q.client_email as string,
+      firstname,
+      lastname,
+      company: (q.client_company as string | null) ?? undefined,
+      lifecyclestage: "marketingqualifiedlead",
+      source: "questionnaire",
+      properties: {
+        itzam_questionnaire_id: q.id as string,
+        itzam_preferred_locale: (q.preferred_locale as string) || "es",
+      },
+    });
+    if (!contact.ok) {
+      // Treat "not configured" as success so deploys without HubSpot creds
+      // don't accumulate failed jobs forever.
+      if (contact.error === "hubspot_not_configured") return;
+      throw new Error(`hubspot contact: ${contact.error}`);
+    }
+    const deal = await createDealForContact({
+      name: `${(q.client_company as string | null) || (q.client_name as string)} — AI Opportunity Assessment`,
+      contactId: contact.id,
+      source: "questionnaire",
+      properties: {
+        itzam_questionnaire_id: q.id as string,
+      },
+    });
+    if (!deal.ok && deal.error !== "hubspot_not_configured") {
+      throw new Error(`hubspot deal: ${deal.error}`);
+    }
     return;
   }
 }

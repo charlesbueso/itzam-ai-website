@@ -186,4 +186,69 @@ export function contactNotification(opts: {
   };
 }
 
+/**
+ * Confirmation email sent to the person who submitted the contact / waitlist
+ * form. Bilingual based on detected locale.
+ */
+export function contactConfirmationEmail(opts: {
+  name: string;
+  locale: "es" | "en";
+  variant?: "contact" | "waitlist";
+}): { subject: string; html: string; text: string } {
+  const name = htmlEscape(opts.name.split(/\s+/)[0] || opts.name);
+  const en = opts.locale === "en";
+  const isWaitlist = opts.variant === "waitlist";
 
+  const body = en
+    ? `
+      <p style="margin:0 0 16px 0;font-size:18px;font-weight:bold;">Thanks, ${name} — we got it.</p>
+      <p style="margin:0 0 16px 0;">${
+        isWaitlist
+          ? "You're on the Itzam.ai waitlist. We'll reach out as soon as your spot is ready."
+          : "We've received your message. A member of our team will get back to you within one business day."
+      }</p>
+      <p style="margin:0 0 16px 0;">In the meantime, feel free to reply to this email if you have anything to add — it goes straight to our inbox.</p>
+      <p style="margin:24px 0 0 0;">— The Itzam.ai team</p>
+    `
+    : `
+      <p style="margin:0 0 16px 0;font-size:18px;font-weight:bold;">Gracias, ${name} — lo recibimos.</p>
+      <p style="margin:0 0 16px 0;">${
+        isWaitlist
+          ? "Estás en la lista de espera de Itzam.ai. Te contactaremos en cuanto tu lugar esté listo."
+          : "Recibimos tu mensaje. Un miembro de nuestro equipo te contactará en menos de un día hábil."
+      }</p>
+      <p style="margin:0 0 16px 0;">Mientras tanto, puedes responder a este correo si quieres agregar algo — llega directo a nuestra bandeja.</p>
+      <p style="margin:24px 0 0 0;">— El equipo de Itzam.ai</p>
+    `;
+
+  return {
+    subject: en
+      ? isWaitlist
+        ? "You're on the Itzam.ai waitlist"
+        : "We received your message — Itzam.ai"
+      : isWaitlist
+        ? "Estás en la lista de espera de Itzam.ai"
+        : "Recibimos tu mensaje — Itzam.ai",
+    text: en
+      ? `Thanks, ${opts.name}.\n\n${
+          isWaitlist
+            ? "You're on the Itzam.ai waitlist. We'll reach out as soon as your spot is ready."
+            : "We've received your message. A member of our team will get back to you within one business day."
+        }\n\nReply to this email anytime.\n\n— Itzam.ai`
+      : `Gracias, ${opts.name}.\n\n${
+          isWaitlist
+            ? "Estás en la lista de espera de Itzam.ai. Te contactaremos en cuanto tu lugar esté listo."
+            : "Recibimos tu mensaje. Un miembro de nuestro equipo te contactará en menos de un día hábil."
+        }\n\nResponde a este correo cuando quieras.\n\n— Itzam.ai`,
+    html: renderBrandedEmail({
+      body,
+      preheader: en
+        ? isWaitlist
+          ? "You're on the Itzam.ai waitlist."
+          : "We received your message — we'll be in touch shortly."
+        : isWaitlist
+          ? "Estás en la lista de espera de Itzam.ai."
+          : "Recibimos tu mensaje — te contactaremos pronto.",
+    }),
+  };
+}

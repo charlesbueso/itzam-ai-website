@@ -3,6 +3,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { ASSETS } from "@/lib/assets";
 import Analytics from "@/components/Analytics";
+import HubSpot from "@/components/HubSpot";
 
 const SITE_URL = "https://itzam.ai";
 const SITE_NAME = "Itzam.ai";
@@ -223,6 +224,7 @@ export default function RootLayout({
       <body>
         {children}
         <Analytics />
+        <HubSpot />
         <SpeedInsights />
       </body>
     </html>
