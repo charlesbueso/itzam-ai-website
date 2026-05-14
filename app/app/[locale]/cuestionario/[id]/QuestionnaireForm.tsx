@@ -51,6 +51,7 @@ export function QuestionnaireForm({
   const [savingState, setSavingState] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [submitState, setSubmitState] = useState<"idle" | "submitting" | "done" | "error">("idle");
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [accepted, setAccepted] = useState(false);
   const pending = useRef<Map<string, AnswerValue>>(new Map());
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const focusedQid = useRef<string | null>(null);
@@ -184,6 +185,11 @@ export function QuestionnaireForm({
   const pct = totalRequired === 0 ? 100 : Math.round((completedRequired / totalRequired) * 100);
 
   const onSubmit = async () => {
+    if (!accepted) {
+      setSubmitState("error");
+      setSubmitError(t.legal.accept.error);
+      return;
+    }
     setSubmitState("submitting");
     setSubmitError(null);
     await flush();
@@ -252,10 +258,39 @@ export function QuestionnaireForm({
         {!isComplete && (
           <p className="mb-3 text-sm text-white/50">{t.app.questionnaire.submitDisabled}</p>
         )}
+        <label className="mb-4 flex cursor-pointer items-start gap-3 text-sm leading-relaxed text-white/75">
+          <input
+            type="checkbox"
+            checked={accepted}
+            onChange={(e) => setAccepted(e.target.checked)}
+            className="mt-0.5 h-4 w-4 flex-shrink-0 accent-white"
+          />
+          <span>
+            {t.legal.accept.intro}{" "}
+            <a
+              href={`https://itzam.ai/${locale}/privacy`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-4 hover:text-white"
+            >
+              {t.legal.accept.privacy}
+            </a>{" "}
+            {t.legal.accept.and}{" "}
+            <a
+              href={`https://itzam.ai/${locale}/terms`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-4 hover:text-white"
+            >
+              {t.legal.accept.terms}
+            </a>
+            .
+          </span>
+        </label>
         {submitError && <p className="mb-3 text-sm text-red-300">{submitError}</p>}
         <button
           type="button"
-          disabled={!isComplete || submitState === "submitting" || submitState === "done"}
+          disabled={!isComplete || !accepted || submitState === "submitting" || submitState === "done"}
           onClick={onSubmit}
           className="rounded bg-white px-6 py-3 font-medium text-black transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-40"
         >
