@@ -58,3 +58,32 @@ export const QuestionPatch = z.object({
 export const QuestionsBatchPatch = z.object({
   items: z.array(QuestionPatch).min(1).max(20),
 }).strict();
+
+export const CustomQuestionCreate = z.object({
+  type: z.enum(["text", "single", "multi"]),
+  label_es: z.string().trim().min(1).max(500),
+  label_en: z.string().trim().min(1).max(500),
+  required: z.boolean().optional().default(true),
+  multiline: z.boolean().optional().default(false),
+  options: z.array(QuestionOption).max(20).optional().default([]),
+}).strict().superRefine((val, ctx) => {
+  if (val.type === "text") {
+    if (val.options && val.options.length > 0) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "text questions cannot have options", path: ["options"] });
+    }
+  } else {
+    if (!val.options || val.options.length < 2) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "choice questions need at least 2 options", path: ["options"] });
+    }
+    if (val.options) {
+      const seen = new Set<string>();
+      for (const o of val.options) {
+        if (seen.has(o.value)) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: "duplicate option value", path: ["options"] });
+          break;
+        }
+        seen.add(o.value);
+      }
+    }
+  }
+});

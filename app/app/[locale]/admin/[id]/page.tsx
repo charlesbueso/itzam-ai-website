@@ -34,7 +34,7 @@ export default async function AdminQuestionnaireDetail({
 
   const { data: questions } = await supabase
     .from("questions")
-    .select("id, position, block_es, block_en, type, label_es, label_en, options, required, multiline")
+    .select("id, position, block_es, block_en, type, label_es, label_en, options, required, multiline, is_custom")
     .eq("questionnaire_id", params.id)
     .order("position", { ascending: true });
 
@@ -122,6 +122,29 @@ export default async function AdminQuestionnaireDetail({
               saving: dict.app.admin.editSaving,
               saved: dict.app.admin.editSaved,
               saveError: dict.app.admin.editError,
+              customHeading: dict.app.admin.customHeading,
+              customHint: dict.app.admin.customHint,
+              addCustomCta: dict.app.admin.addCustomCta,
+              addingCustom: dict.app.admin.addingCustom,
+              deleteCustom: dict.app.admin.deleteCustom,
+              confirmDeleteCustom: dict.app.admin.confirmDeleteCustom,
+              newQuestionLabelEs: dict.app.admin.newQuestionLabelEs,
+              newQuestionLabelEn: dict.app.admin.newQuestionLabelEn,
+              newQuestionType: dict.app.admin.newQuestionType,
+              typeText: dict.app.admin.typeText,
+              typeSingle: dict.app.admin.typeSingle,
+              typeMulti: dict.app.admin.typeMulti,
+              newQuestionMultiline: dict.app.admin.newQuestionMultiline,
+              newQuestionOptionsLabel: dict.app.admin.newQuestionOptionsLabel,
+              newQuestionOptionEsPlaceholder: dict.app.admin.newQuestionOptionEsPlaceholder,
+              newQuestionOptionEnPlaceholder: dict.app.admin.newQuestionOptionEnPlaceholder,
+              newQuestionAddOption: dict.app.admin.newQuestionAddOption,
+              newQuestionRemoveOption: dict.app.admin.newQuestionRemoveOption,
+              newQuestionSave: dict.app.admin.newQuestionSave,
+              newQuestionCancel: dict.app.admin.newQuestionCancel,
+              newQuestionMinOptions: dict.app.admin.newQuestionMinOptions,
+              newQuestionMissingLabel: dict.app.admin.newQuestionMissingLabel,
+              customLimitReached: dict.app.admin.customLimitReached,
             }}
           />
         ) : (
