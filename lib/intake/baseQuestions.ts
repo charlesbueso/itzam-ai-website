@@ -1,6 +1,7 @@
 /**
  * Source of truth for the AI Opportunity Assessment intake form.
- * 15 questions in 5 blocks, bilingual ES/EN.
+ * 16 questions in 5 blocks, bilingual ES/EN. Admins can also append extra
+ * custom questions per-questionnaire (see `is_custom` column on `questions`).
  *
  * When an admin creates a new questionnaire we deep-clone these into the
  * `questions` table so they can be edited per-client without affecting
@@ -67,6 +68,24 @@ export const BASE_QUESTIONS: BaseQuestion[] = [
     position: 3,
     block_es: BLOCK.company.es,
     block_en: BLOCK.company.en,
+    type: "single",
+    label_es: "¿En qué industria opera tu empresa?",
+    label_en: "What industry does your company operate in?",
+    required: true,
+    options: [
+      { value: "it_resellers", label_es: "IT Resellers / Canal Tech", label_en: "IT Resellers / Tech Channel" },
+      { value: "distribution_logistics", label_es: "Distribución y Logística", label_en: "Distribution & Logistics" },
+      { value: "financial_services", label_es: "Servicios Financieros", label_en: "Financial Services" },
+      { value: "manufacturing", label_es: "Manufactura", label_en: "Manufacturing" },
+      { value: "professional_services", label_es: "Servicios Profesionales", label_en: "Professional Services" },
+      { value: "healthcare", label_es: "Salud", label_en: "Healthcare" },
+      { value: "other", label_es: "Otro", label_en: "Other" },
+    ],
+  },
+  {
+    position: 4,
+    block_es: BLOCK.company.es,
+    block_en: BLOCK.company.en,
     type: "text",
     label_es:
       "¿Cuántas personas tiene tu equipo de ventas, incluyendo SDRs, ejecutivos y managers?",
@@ -76,7 +95,7 @@ export const BASE_QUESTIONS: BaseQuestion[] = [
     options: [],
   },
   {
-    position: 4,
+    position: 5,
     block_es: BLOCK.ops.es,
     block_en: BLOCK.ops.en,
     type: "text",
@@ -89,7 +108,7 @@ export const BASE_QUESTIONS: BaseQuestion[] = [
     multiline: true,
   },
   {
-    position: 5,
+    position: 6,
     block_es: BLOCK.ops.es,
     block_en: BLOCK.ops.en,
     type: "text",
@@ -101,7 +120,7 @@ export const BASE_QUESTIONS: BaseQuestion[] = [
     options: [],
   },
   {
-    position: 6,
+    position: 7,
     block_es: BLOCK.ops.es,
     block_en: BLOCK.ops.en,
     type: "text",
@@ -114,7 +133,7 @@ export const BASE_QUESTIONS: BaseQuestion[] = [
     multiline: true,
   },
   {
-    position: 7,
+    position: 8,
     block_es: BLOCK.ops.es,
     block_en: BLOCK.ops.en,
     type: "single",
@@ -131,7 +150,7 @@ export const BASE_QUESTIONS: BaseQuestion[] = [
     ],
   },
   {
-    position: 8,
+    position: 9,
     block_es: BLOCK.tech.es,
     block_en: BLOCK.tech.en,
     type: "multi",
@@ -143,12 +162,13 @@ export const BASE_QUESTIONS: BaseQuestion[] = [
       { value: "email", label_es: "Email", label_en: "Email" },
       { value: "sheets", label_es: "Excel o Sheets", label_en: "Excel or Sheets" },
       { value: "whatsapp", label_es: "WhatsApp", label_en: "WhatsApp" },
+      { value: "whatsapp_business", label_es: "WhatsApp Business", label_en: "WhatsApp Business" },
       { value: "linkedin", label_es: "LinkedIn", label_en: "LinkedIn" },
       { value: "other", label_es: "Otras", label_en: "Other" },
     ],
   },
   {
-    position: 9,
+    position: 10,
     block_es: BLOCK.tech.es,
     block_en: BLOCK.tech.en,
     type: "text",
@@ -159,7 +179,7 @@ export const BASE_QUESTIONS: BaseQuestion[] = [
     multiline: true,
   },
   {
-    position: 10,
+    position: 11,
     block_es: BLOCK.tech.es,
     block_en: BLOCK.tech.en,
     type: "text",
@@ -172,7 +192,7 @@ export const BASE_QUESTIONS: BaseQuestion[] = [
     multiline: true,
   },
   {
-    position: 11,
+    position: 12,
     block_es: BLOCK.ai.es,
     block_en: BLOCK.ai.en,
     type: "text",
@@ -183,7 +203,7 @@ export const BASE_QUESTIONS: BaseQuestion[] = [
     multiline: true,
   },
   {
-    position: 12,
+    position: 13,
     block_es: BLOCK.ai.es,
     block_en: BLOCK.ai.en,
     type: "single",
@@ -198,7 +218,7 @@ export const BASE_QUESTIONS: BaseQuestion[] = [
     ],
   },
   {
-    position: 13,
+    position: 14,
     block_es: BLOCK.context.es,
     block_en: BLOCK.context.en,
     type: "text",
@@ -209,7 +229,7 @@ export const BASE_QUESTIONS: BaseQuestion[] = [
     multiline: true,
   },
   {
-    position: 14,
+    position: 15,
     block_es: BLOCK.context.es,
     block_en: BLOCK.context.en,
     type: "text",
@@ -219,7 +239,7 @@ export const BASE_QUESTIONS: BaseQuestion[] = [
     options: [],
   },
   {
-    position: 15,
+    position: 16,
     block_es: BLOCK.context.es,
     block_en: BLOCK.context.en,
     type: "text",
