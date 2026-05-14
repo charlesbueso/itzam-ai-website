@@ -1,7 +1,8 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useT } from "@/lib/i18n/LocaleProvider";
+import Link from "next/link";
+import { useT, useLocale } from "@/lib/i18n/LocaleProvider";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -22,11 +23,18 @@ export default function ContactForm({
   className?: string;
 }) {
   const t = useT();
+  const { locale } = useLocale();
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [accepted, setAccepted] = useState(false);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!accepted) {
+      setStatus("error");
+      setErrorMsg(t.legal.accept.error);
+      return;
+    }
     setStatus("submitting");
     setErrorMsg(null);
 
@@ -128,11 +136,44 @@ export default function ContactForm({
         />
       </div>
 
-      <div className="md:col-span-2 flex flex-col items-start gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-xs text-white/50">{t.waitlist.disclaimer}</p>
+      <div className="md:col-span-2 flex flex-col items-start gap-4 pt-2 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-3 text-xs text-white/60">
+          <label className="flex cursor-pointer items-start gap-3 leading-relaxed text-white/75">
+            <input
+              type="checkbox"
+              name="accept_terms"
+              checked={accepted}
+              onChange={(e) => setAccepted(e.target.checked)}
+              required
+              className="mt-0.5 h-4 w-4 flex-shrink-0 accent-[#c9a040]"
+            />
+            <span>
+              {t.legal.accept.intro}{" "}
+              <Link
+                href={`/${locale}/privacy`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#c9a040] underline-offset-4 hover:underline"
+              >
+                {t.legal.accept.privacy}
+              </Link>{" "}
+              {t.legal.accept.and}{" "}
+              <Link
+                href={`/${locale}/terms`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#c9a040] underline-offset-4 hover:underline"
+              >
+                {t.legal.accept.terms}
+              </Link>
+              .
+            </span>
+          </label>
+          <p className="text-xs text-white/50">{t.waitlist.disclaimer}</p>
+        </div>
         <button
           type="submit"
-          disabled={status === "submitting"}
+          disabled={status === "submitting" || !accepted}
           className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#c9a040] px-7 py-3 text-sm font-semibold text-black transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a040] focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-60"
         >
           {status === "submitting" ? t.waitlist.submitting : t.waitlist.submit}

@@ -17,6 +17,11 @@ export default function Footer() {
     { href: `/${locale}/contact`, label: t.nav.links.contact },
   ];
 
+  const legalLinks: { href: string; label: string }[] = [
+    { href: `/${locale}/privacy`, label: t.footer.privacyLink },
+    { href: `/${locale}/terms`, label: t.footer.termsLink },
+  ];
+
   return (
     <footer className="relative w-full border-t border-white/10 bg-black px-6 pb-10 pt-20 md:px-10 md:pb-12 md:pt-24">
       <Reveal className="mx-auto w-full max-w-[90rem]">
@@ -61,6 +66,22 @@ export default function Footer() {
             >
               contact@itzam.ai
             </a>
+
+            <p className="mt-8 text-xs font-medium uppercase tracking-[0.18em] text-white/45">
+              {t.footer.legalLabel}
+            </p>
+            <ul className="mt-4 space-y-3">
+              {legalLinks.map((l) => (
+                <li key={l.href}>
+                  <Link
+                    href={l.href}
+                    className="text-sm text-white/80 transition hover:text-[#c9a040]"
+                  >
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div className="md:col-span-2">

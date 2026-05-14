@@ -32,7 +32,7 @@ Itzam.ai turns AI from a slide deck into something a sales team uses on Monday m
 
 ## Identity
 
-- Brand: Itzam (named after Itzamná, the Mayan god of knowledge).
+- Brand: Itzam.
 - Tagline: Intelligence, deployed.
 - Languages: English, Spanish.
 - Locales: en-US, es-MX.

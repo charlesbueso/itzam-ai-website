@@ -36,7 +36,12 @@ export type Dictionary = {
     eyebrow: string; heading: string; sub: string;
     direct: { label: string; email: string; responseLabel: string; response: string; locationLabel: string; location: string };
   };
-  footer: { tagline: string; sectionsLabel: string; contactLabel: string; languageLabel: string; rights: string };
+  footer: { tagline: string; sectionsLabel: string; contactLabel: string; languageLabel: string; rights: string; legalLabel: string; privacyLink: string; termsLink: string };
+  legal: {
+    privacy: { meta: { title: string; description: string }; title: string; lastUpdated: string };
+    terms: { meta: { title: string; description: string }; title: string; lastUpdated: string };
+    accept: { intro: string; privacy: string; and: string; terms: string; error: string };
+  };
   hero: {
     tag1: string; tag2: string;
     frame1: { heading1: string; heading2: string; sub: string };
@@ -79,9 +84,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
     common: { learnMore: "Learn more", requestQuote: "Request a quote", talkToUs: "Talk to us", backToTop: "Back to top", comingSoon: "Coming soon", addOn: "Add-on" },
     home: {
       manifesto: {
-        eyebrow: "Our name",
-        heading1: "Itzam was the Mayan",
-        heading2: "god of knowledge.",
+        eyebrow: "Our conviction",
+        heading1: "Knowledge, applied",
+        heading2: "to your operation.",
         body: "We're a Mexican AI agency helping commercial teams in Latin America implement AI in weeks — not months. Real practitioners, real models, concrete deliverables from day one.",
         attribution: "— The Itzam.ai team",
       },
@@ -163,11 +168,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
       closing: { heading: "Not sure which one fits?", body: "Tell us where you are and we'll point to the right starting move — or build a custom engagement.", cta: "Talk to us" },
     },
     about: {
-      meta: { title: "About", description: "Itzam.ai is a Mexican AI agency named after the Mayan god of knowledge. We help commercial teams in Latin America implement AI in weeks — not months." },
+      meta: { title: "About", description: "An AI agency that helps businesses in Mexico and LatAm implement AI that works — in weeks, not months. Real practitioners, real models, concrete deliverables from day one." },
       hero: {
         eyebrow: "About Itzam.ai",
-        heading1: "Named for the Mayan",
-        heading2: "god of knowledge.",
+        heading1: "Built to make AI",
+        heading2: "work for your team.",
         sub: "We're a Mexican AI agency for commercial teams in LatAm. Our job is to turn AI from a concept into systems your team uses every day.",
       },
       conviction: {
@@ -198,7 +203,26 @@ export const dictionaries: Record<Locale, Dictionary> = {
       sub: "Tell us what you're building, or what's slowing you down. We'll come back with a clear-eyed take and a concrete path forward.",
       direct: { label: "Direct contact", email: "contact@itzam.ai", responseLabel: "Response time", response: "Within 48 hours, every business day.", locationLabel: "Based in", location: "Mexico City — working across LatAm." },
     },
-    footer: { tagline: "Intelligence, deployed — across LatAm.", sectionsLabel: "Sections", contactLabel: "Contact", languageLabel: "Language", rights: "All rights reserved." },
+    footer: { tagline: "Intelligence, deployed — across LatAm.", sectionsLabel: "Sections", contactLabel: "Contact", languageLabel: "Language", rights: "All rights reserved.", legalLabel: "Legal", privacyLink: "Privacy Policy", termsLink: "Terms and Conditions" },
+    legal: {
+      privacy: {
+        meta: { title: "Privacy Policy", description: "How Itzam.ai collects, uses, and protects your personal data. ARCO rights under Mexican LFPDPPP." },
+        title: "Privacy Policy",
+        lastUpdated: "Last updated: May 2026",
+      },
+      terms: {
+        meta: { title: "Terms and Conditions", description: "Terms governing the engagement between Itzam.ai and its clients." },
+        title: "Terms and Conditions",
+        lastUpdated: "Last updated: May 2026",
+      },
+      accept: {
+        intro: "I have read and agree to the",
+        privacy: "Privacy Policy",
+        and: "and",
+        terms: "Terms and Conditions",
+        error: "Please accept the Privacy Policy and Terms and Conditions to continue.",
+      },
+    },
     hero: {
       tag1: "AI Agency", tag2: "México",
       frame1: { heading1: "Intelligence,", heading2: "deployed.", sub: "The AI agency for sales teams in Mexico and LatAm. Diagnosis, implementation, and results — in weeks." },
@@ -246,9 +270,9 @@ export const dictionaries: Record<Locale, Dictionary> = {
     common: { learnMore: "Conocer más", requestQuote: "Solicitar cotización", talkToUs: "Hablemos", backToTop: "Volver arriba", comingSoon: "Próximamente", addOn: "Add-on" },
     home: {
       manifesto: {
-        eyebrow: "Nuestro nombre",
-        heading1: "Itzam fue el dios maya",
-        heading2: "del conocimiento.",
+        eyebrow: "Nuestra convicción",
+        heading1: "Conocimiento",
+        heading2: "en tu operación.",
         body: "Somos una agencia mexicana de IA que ayuda a equipos comerciales en Latinoamérica a implementar IA en semanas — no en meses. Practicantes reales, modelos reales, entregables concretos desde el día uno.",
         attribution: "— El equipo de Itzam.ai",
       },
@@ -326,11 +350,11 @@ export const dictionaries: Record<Locale, Dictionary> = {
       closing: { heading: "¿No sabes cuál te aplica?", body: "Cuéntanos dónde estás y te apuntamos al siguiente paso correcto — o construimos un engagement a la medida.", cta: "Hablemos" },
     },
     about: {
-      meta: { title: "Nosotros", description: "Itzam.ai es una agencia mexicana de IA, nombrada por el dios maya del conocimiento. Ayudamos a equipos comerciales en Latinoamérica a implementar IA en semanas, no en meses." },
+      meta: { title: "Nosotros", description: "Una agencia de IA que ayuda a empresas en México y LatAm a implementar IA que funciona — en semanas, no en meses. Implementación práctica, rápida y con resultados desde el día uno." },
       hero: {
         eyebrow: "Sobre Itzam.ai",
-        heading1: "Llamados como el dios",
-        heading2: "maya del conocimiento.",
+        heading1: "Construidos para",
+        heading2: "que la IA funcione.",
         sub: "Somos una agencia mexicana de IA para equipos comerciales en LatAm. Nuestro trabajo es convertir la IA de un concepto en sistemas que tu equipo usa todos los días.",
       },
       conviction: {
@@ -361,7 +385,26 @@ export const dictionaries: Record<Locale, Dictionary> = {
       sub: "Cuéntanos qué estás construyendo, o qué te está frenando. Volvemos con una lectura clara y un camino concreto.",
       direct: { label: "Contacto directo", email: "contact@itzam.ai", responseLabel: "Tiempo de respuesta", response: "En menos de 48 horas, todo día hábil.", locationLabel: "Ubicación", location: "Ciudad de México — operando en todo LatAm." },
     },
-    footer: { tagline: "Inteligencia, en producción — en toda LatAm.", sectionsLabel: "Secciones", contactLabel: "Contacto", languageLabel: "Idioma", rights: "Todos los derechos reservados." },
+    footer: { tagline: "Inteligencia, en producción — en toda LatAm.", sectionsLabel: "Secciones", contactLabel: "Contacto", languageLabel: "Idioma", rights: "Todos los derechos reservados.", legalLabel: "Legal", privacyLink: "Aviso de Privacidad", termsLink: "Términos y Condiciones" },
+    legal: {
+      privacy: {
+        meta: { title: "Aviso de Privacidad", description: "Cómo Itzam.ai recopila, usa y protege tus datos personales. Derechos ARCO conforme a la LFPDPPP." },
+        title: "Aviso de Privacidad",
+        lastUpdated: "Última actualización: mayo 2026",
+      },
+      terms: {
+        meta: { title: "Términos y Condiciones", description: "Términos que rigen la relación entre Itzam.ai y sus clientes." },
+        title: "Términos y Condiciones",
+        lastUpdated: "Última actualización: mayo 2026",
+      },
+      accept: {
+        intro: "He leído y acepto el",
+        privacy: "Aviso de Privacidad",
+        and: "y los",
+        terms: "Términos y Condiciones",
+        error: "Acepta el Aviso de Privacidad y los Términos y Condiciones para continuar.",
+      },
+    },
     hero: {
       tag1: "Agencia de IA", tag2: "México",
       frame1: { heading1: "Inteligencia,", heading2: "en\u00a0producción.", sub: "La agencia de IA para equipos comerciales en México y LatAm. Diagnóstico, implementación y resultados — en semanas." },
