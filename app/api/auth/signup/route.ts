@@ -10,6 +10,7 @@ import { readPendingInvite } from "@/lib/auth/pendingInvite";
 import { validateInvite } from "@/lib/auth/invite";
 import { getResend, RESEND_FROM, RESEND_REPLY_TO, safeHeader } from "@/lib/email/resend";
 import { signupConfirmEmail } from "@/lib/email/templates";
+import { upsertContact } from "@/lib/hubspot/client";
 
 /**
  * Sign-up endpoint.
@@ -186,6 +187,25 @@ export async function POST(req: Request) {
     actorEmail: body.email,
     action: "signup_initiated",
     targetId: pending.id,
+  });
+
+  // Non-blocking HubSpot CRM sync. We sync at signup-initiated (before email
+  // confirmation) so the contact exists in HubSpot the moment they enter
+  // their email; if they never confirm, you can filter on
+  // `itzam_signup_confirmed` later. Update that property elsewhere when the
+  // confirm link is hit.
+  void upsertContact({
+    email: body.email,
+    lifecyclestage: "lead",
+    source: "app_signup",
+    properties: {
+      itzam_invite_id: pending.id,
+      itzam_signup_confirmed: false,
+    },
+  }).then((r) => {
+    if (!r.ok && r.error !== "hubspot_not_configured") {
+      console.warn("[hubspot] signup sync failed:", r.error);
+    }
   });
 
   return NextResponse.json({ ok: true });

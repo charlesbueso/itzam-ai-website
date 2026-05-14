@@ -118,7 +118,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   }
 
   // Enqueue outbox jobs (idempotent thanks to UNIQUE(questionnaire_id, kind)).
-  const jobs = ["drive", "client_email", "admin_email"].map((kind) => ({
+  const jobs = ["drive", "client_email", "admin_email", "hubspot"].map((kind) => ({
     questionnaire_id: q.id,
     kind,
     status: "pending",
