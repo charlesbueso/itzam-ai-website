@@ -55,16 +55,6 @@ export const metadata: Metadata = {
   creator: "Itzam.ai",
   publisher: "Itzam.ai",
   category: "technology",
-  alternates: {
-    canonical: "/",
-    languages: {
-      en: "/en",
-      "en-US": "/en",
-      es: "/es",
-      "es-MX": "/es",
-      "x-default": "/en",
-    },
-  },
   icons: {
     icon: [{ url: ASSETS.logoGold, type: "image/png" }],
     shortcut: [ASSETS.logoGold],
