@@ -50,6 +50,8 @@ export default function Hero() {
   }, []);
 
   // Capture intrinsic video dimensions for the desktop pan calculation.
+  // If metadata stalls (slow network), fall back to a wide aspect so the
+  // scroll timeline still initializes and frame 2 can reveal.
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
@@ -60,7 +62,13 @@ export default function Hero() {
     };
     if (v.readyState >= 1) handle();
     v.addEventListener("loadedmetadata", handle);
-    return () => v.removeEventListener("loadedmetadata", handle);
+    const fallback = window.setTimeout(() => {
+      setVideoSize((s) => s ?? { w: 21, h: 9 });
+    }, 2500);
+    return () => {
+      v.removeEventListener("loadedmetadata", handle);
+      window.clearTimeout(fallback);
+    };
   }, []);
 
   useLayoutEffect(() => {
@@ -105,6 +113,10 @@ export default function Hero() {
             scrub: 0.6,
             anticipatePin: 1,
             invalidateOnRefresh: true,
+            // This trigger is created late (after video metadata) while
+            // pinned sections below already exist. Refresh it first so
+            // their start positions include this pin's spacer.
+            refreshPriority: 1,
             onUpdate: (self) => {
               if (self.progress > 0.08) setFrame2Revealed(true);
             },
@@ -161,7 +173,7 @@ export default function Hero() {
               ref={frame1Ref}
               className="absolute inset-0 flex items-center justify-start px-8 md:px-16 lg:px-24"
             >
-              <div className="flex max-w-2xl flex-col items-start text-left">
+              <div className="flex max-w-3xl flex-col items-start text-left">
                 <div className="mb-6 flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-sm font-medium tracking-wide text-white/90">
                     {t.hero.tag1}
@@ -173,7 +185,7 @@ export default function Hero() {
                 </div>
                 <RevealText
                   as="h1"
-                  className="text-6xl font-semibold leading-[0.95] tracking-tight text-white sm:text-7xl md:text-8xl lg:text-9xl"
+                  className="text-[clamp(3.25rem,7.5vw,8rem)] font-semibold leading-[0.95] tracking-tight text-white"
                 >
                   {t.hero.frame1.heading1}
                   <br />
@@ -187,13 +199,16 @@ export default function Hero() {
 
             <div
               ref={frame2Ref}
+              // Hidden pre-hydration so it never stacks over frame 1 while
+              // GSAP (which waits on video metadata) hasn't initialized yet.
+              style={{ visibility: "hidden", opacity: 0 }}
               className="absolute inset-0 flex items-center justify-end px-8 md:px-16 lg:px-24"
             >
               <div className="flex w-full max-w-5xl flex-col items-end text-right">
                 <RevealText
                   as="h2"
                   play={frame2Revealed}
-                  className="text-6xl font-semibold leading-[0.95] tracking-tight text-white sm:text-7xl md:text-8xl lg:text-9xl"
+                  className="text-[clamp(3.25rem,7.5vw,8rem)] font-semibold leading-[0.95] tracking-tight text-white"
                 >
                   {t.hero.frame2.heading1}
                   <br />
@@ -215,8 +230,10 @@ export default function Hero() {
 
       {/* ─────────── Mobile hero (< md) ─────────── */}
       <section id="mobile-hero" className="relative w-full bg-black md:hidden">
-        {/* Sticky video stays in place while text scrolls past it */}
-        <div className="sticky top-0 h-screen w-full overflow-hidden">
+        {/* Sticky video stays in place while text scrolls past it.
+            svh: stable small-viewport height — 100vh overflows behind
+            mobile browser chrome and caused text to spill at load. */}
+        <div className="sticky top-0 h-[100svh] w-full overflow-hidden">
           <video
             ref={mobileVideoRef}
             className="absolute top-0 h-full w-auto max-w-none"
@@ -234,9 +251,9 @@ export default function Hero() {
         </div>
 
         {/* Scrolling content sits on top of the sticky video */}
-        <div className="relative z-10 -mt-[100vh] px-6 text-left text-white">
+        <div className="relative z-10 -mt-[100svh] px-6 text-left text-white">
           {/* Frame 1 — first viewport: tags + heading at top, subhead at bottom */}
-          <div className="flex h-screen flex-col justify-between pb-10 pt-28">
+          <div className="flex h-[100svh] flex-col justify-between pb-10 pt-28">
             <div className="flex flex-col items-start">
               <div className="mb-5 flex flex-wrap items-center gap-2">
                 <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium tracking-wide text-white/90">
@@ -249,7 +266,7 @@ export default function Hero() {
               </div>
               <RevealText
                 as="h1"
-                className="text-5xl font-semibold leading-[0.95] tracking-tight text-white"
+                className="text-[clamp(2.25rem,9.5vw,3.5rem)] font-semibold leading-[0.95] tracking-tight text-white"
               >
                 {t.hero.frame1.heading1}
                 <br />
@@ -262,10 +279,10 @@ export default function Hero() {
           </div>
 
           {/* Frame 2: heading pushed down, subhead close beneath */}
-          <div className="flex h-screen flex-col pt-40">
+          <div className="flex h-[100svh] flex-col pt-40">
             <RevealText
               as="h2"
-              className="text-5xl font-semibold leading-[0.95] tracking-tight text-white"
+              className="text-[clamp(2.25rem,9.5vw,3.5rem)] font-semibold leading-[0.95] tracking-tight text-white"
             >
               {t.hero.frame2.heading1}
               <br />

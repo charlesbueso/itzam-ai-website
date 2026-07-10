@@ -5,6 +5,7 @@ import { ASSETS } from "@/lib/assets";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { LanguagePill } from "./Navbar";
 import Reveal from "./Reveal";
+import GrecaDivider from "./Greca";
 
 export default function Footer() {
   const { locale, t } = useLocale();
@@ -23,7 +24,8 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="relative w-full border-t border-white/10 bg-black px-6 pb-10 pt-20 md:px-10 md:pb-12 md:pt-24">
+    <footer className="relative w-full bg-black px-6 pb-10 pt-16 md:px-10 md:pb-12 md:pt-20">
+      <GrecaDivider className="mx-auto mb-14 w-full max-w-[90rem] md:mb-16" opacity={0.5} />
       <Reveal className="mx-auto w-full max-w-[90rem]">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-12">
           <div className="md:col-span-5">
@@ -96,7 +98,10 @@ export default function Footer() {
 
         <div className="mt-16 flex flex-col items-start justify-between gap-3 border-t border-white/10 pt-6 text-xs text-white/40 md:flex-row md:items-center">
           <p>© {year} Itzam.ai. {t.footer.rights}</p>
-          <p>Hecho en México · Made for LATAM</p>
+          <p className="font-mono uppercase tracking-[0.18em]">
+            Hecho en México <span className="text-[#c9a040]">✦</span> Made for
+            LATAM
+          </p>
         </div>
       </Reveal>
     </footer>

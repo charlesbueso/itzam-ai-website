@@ -5,8 +5,16 @@ import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 import RevealText from "@/components/RevealText";
 import LoopVideo from "@/components/LoopVideo";
+import ServiceGlyph, { GlyphVariant } from "@/components/ServiceGlyph";
 import { ASSETS } from "@/lib/assets";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
+
+const GLYPHS: Record<string, GlyphVariant> = {
+  "service-1": "assessment",
+  "service-2": "playbook",
+  "service-3": "support",
+  "service-4": "brain",
+};
 
 export default function ServicesPageClient() {
   const { locale, t } = useLocale();
@@ -48,9 +56,8 @@ export default function ServicesPageClient() {
               </span>
             </Reveal>
 
-            <h1 className="mt-6 text-5xl font-semibold leading-[0.95] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-8xl">
+            <h1 className="mt-6 text-[clamp(3rem,6.5vw,7rem)] font-semibold leading-[0.95] tracking-tight text-white">
               <RevealText as="span">{t.services.heading1}</RevealText>
-              <br />
               <RevealText as="span" delay={0.15}>
                 {t.services.heading2}
               </RevealText>
@@ -96,34 +103,47 @@ export default function ServicesPageClient() {
             }`}
           >
             <div className="mx-auto w-full max-w-[90rem]">
-              <Reveal as="span">
-                <span
-                  className={`font-mono text-xs uppercase tracking-[0.22em] ${
-                    light ? "text-neutral-500" : "text-[#c9a040]"
-                  }`}
-                >
-                  {s.number}
-                </span>
-              </Reveal>
+              <div className="grid grid-cols-1 gap-10 md:grid-cols-12 md:items-center md:gap-8">
+                <div className="md:col-span-8">
+                  <Reveal as="span">
+                    <span
+                      className={`font-mono text-xs uppercase tracking-[0.22em] ${
+                        light ? "text-neutral-500" : "text-[#c9a040]"
+                      }`}
+                    >
+                      {s.number}
+                    </span>
+                  </Reveal>
 
-              <h2
-                className={`mt-3 max-w-3xl text-4xl font-semibold leading-[1.02] tracking-tight md:text-6xl ${
-                  light ? "text-neutral-900" : "text-white"
-                }`}
-              >
-                <RevealText as="span" lineColor="#c9a040">
-                  {s.title}
-                </RevealText>
-              </h2>
+                  <h2
+                    className={`mt-3 max-w-3xl text-4xl font-semibold leading-[1.02] tracking-tight md:text-6xl ${
+                      light ? "text-neutral-900" : "text-white"
+                    }`}
+                  >
+                    <RevealText as="span" lineColor="#c9a040">
+                      {s.title}
+                    </RevealText>
+                  </h2>
 
-              <Reveal
-                as="p"
-                className={`mt-5 max-w-2xl text-lg font-medium md:text-xl ${
-                  light ? "text-neutral-700" : "text-white/75"
-                }`}
-              >
-                {s.tagline}
-              </Reveal>
+                  <Reveal
+                    as="p"
+                    className={`mt-5 max-w-2xl text-lg font-medium md:text-xl ${
+                      light ? "text-neutral-700" : "text-white/75"
+                    }`}
+                  >
+                    {s.tagline}
+                  </Reveal>
+                </div>
+
+                {/* Animated line-art glyph for this service */}
+                <div className="md:col-span-4 md:flex md:justify-end">
+                  <ServiceGlyph
+                    variant={GLYPHS[s.slug] ?? "assessment"}
+                    light={light}
+                    className="w-[190px] md:w-[250px] lg:w-[280px]"
+                  />
+                </div>
+              </div>
 
               <div className="mt-12 grid grid-cols-1 gap-12 md:grid-cols-12 md:gap-10">
                 <div className="md:col-span-5">
@@ -248,15 +268,11 @@ export default function ServicesPageClient() {
               </div>
 
               <Reveal className="mt-14">
-                <Link
-                  href={`/${locale}/contact`}
-                  className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#c9a040] px-7 py-3 text-sm font-semibold text-black transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a040] focus-visible:ring-offset-2"
-                  style={{
-                    // light section: offset-2 white; dark: offset-2 black
-                    // CSS doesn't allow conditionally — use ring color directly
-                  }}
-                >
-                  {t.common.requestQuote} →
+                <Link href={`/${locale}/contact`} className="btn-gold">
+                  <span>{t.common.requestQuote}</span>
+                  <span aria-hidden="true" className="btn-arrow">
+                    →
+                  </span>
                 </Link>
               </Reveal>
             </div>
@@ -277,11 +293,11 @@ export default function ServicesPageClient() {
             {t.services.closing.body}
           </Reveal>
           <Reveal className="mt-10">
-            <Link
-              href={`/${locale}/contact`}
-              className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#c9a040] px-8 py-3 text-sm font-semibold text-black transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a040] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-            >
-              {t.services.closing.cta} →
+            <Link href={`/${locale}/contact`} className="btn-gold px-8">
+              <span>{t.services.closing.cta}</span>
+              <span aria-hidden="true" className="btn-arrow">
+                →
+              </span>
             </Link>
           </Reveal>
         </div>

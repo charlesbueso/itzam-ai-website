@@ -78,7 +78,7 @@ export default function ContactForm({
   if (status === "success") {
     return (
       <div
-        className={`rounded-xl border border-white/15 bg-white/5 p-8 backdrop-blur-sm ${className}`}
+        className={`motion-safe:animate-fadeInUp rounded-xl border border-[#c9a040]/30 bg-[#c9a040]/[0.06] p-8 backdrop-blur-sm ${className}`}
       >
         <p className="text-xl font-semibold text-white">
           {t.waitlist.successTitle}
@@ -174,7 +174,7 @@ export default function ContactForm({
         <button
           type="submit"
           disabled={status === "submitting" || !accepted}
-          className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#c9a040] px-7 py-3 text-sm font-semibold text-black transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a040] focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:opacity-60"
+          className="btn-gold disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none"
         >
           {status === "submitting" ? t.waitlist.submitting : t.waitlist.submit}
         </button>

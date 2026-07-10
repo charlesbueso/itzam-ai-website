@@ -8,6 +8,8 @@ import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 import RevealText from "@/components/RevealText";
 import LoopVideo from "@/components/LoopVideo";
+import Parallax from "@/components/Parallax";
+import GrecaDivider from "@/components/Greca";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { SERVICE_VIDEOS } from "@/lib/assets";
 
@@ -48,18 +50,20 @@ export default function HomePageClient() {
                 <Reveal
                   key={s.slug}
                   y={40}
-                  className={`grid grid-cols-1 items-center gap-8 md:grid-cols-12 md:gap-14 ${
+                  className={`group grid grid-cols-1 items-center gap-8 md:grid-cols-12 md:gap-14 ${
                     reverse ? "md:[&>*:first-child]:order-2" : ""
                   }`}
                 >
-                  {/* Media */}
+                  {/* Media — subtle scroll parallax inside the frame */}
                   <div className="md:col-span-7">
-                    <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)]">
-                      <LoopVideo
-                        src={videoUrl}
-                        rate={0.6}
-                        className="absolute inset-0 h-full w-full object-cover"
-                      />
+                    <div className="relative aspect-[16/10] w-full overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] shadow-[0_20px_60px_-20px_rgba(0,0,0,0.6)] transition-colors duration-500 group-hover:border-[#c9a040]/30">
+                      <Parallax yPercent={6} className="absolute inset-0">
+                        <LoopVideo
+                          src={videoUrl}
+                          rate={0.6}
+                          className="h-full w-full scale-[1.15] object-cover transition-transform duration-700 ease-out group-hover:scale-[1.19]"
+                        />
+                      </Parallax>
                     </div>
                   </div>
 
@@ -97,7 +101,10 @@ export default function HomePageClient() {
 
       {/* ───────────── Trust strip ───────────── */}
       <section className="relative w-full bg-black px-6 pb-28 md:px-10 md:pb-36">
-        <div className="mx-auto w-full max-w-[90rem] border-t border-white/10 pt-20 md:pt-28">
+        <div className="mx-auto w-full max-w-[90rem]">
+          <GrecaDivider className="mb-20 md:mb-28" opacity={0.55} />
+        </div>
+        <div className="mx-auto w-full max-w-[90rem]">
           <Reveal as="span">
             <span className="text-xs font-medium uppercase tracking-[0.18em] text-[#c9a040]">
               {t.home.trust.eyebrow}

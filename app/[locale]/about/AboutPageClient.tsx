@@ -62,7 +62,9 @@ export default function AboutPageClient() {
   return (
     <main>
       {/* ───────────── Hero ───────────── */}
-      <section className="relative w-full overflow-hidden bg-black px-6 pb-20 pt-44 md:px-10 md:pb-28 md:pt-52">
+      {/* Mobile: fills the whole (small-)viewport with content centered;
+          desktop keeps its padded editorial height. */}
+      <section className="relative flex min-h-[100svh] w-full items-center overflow-hidden bg-black px-6 pb-16 pt-28 md:block md:min-h-0 md:px-10 md:pb-28 md:pt-52">
         {/* Full-bleed background video */}
         <div className="pointer-events-none absolute inset-0" aria-hidden="true">
           <LoopVideo
@@ -82,9 +84,8 @@ export default function AboutPageClient() {
           </Reveal>
 
           <div className="mt-8 max-w-3xl">
-            <h1 className="text-5xl font-semibold leading-[0.95] tracking-tight text-white sm:text-6xl md:text-7xl lg:text-8xl">
+            <h1 className="text-[clamp(3rem,6.5vw,7rem)] font-semibold leading-[0.95] tracking-tight text-white">
               <RevealText as="span">{t.about.hero.heading1}</RevealText>
-              <br />
               <RevealText as="span" delay={0.15}>
                 {t.about.hero.heading2}
               </RevealText>
@@ -165,7 +166,7 @@ export default function AboutPageClient() {
               <article
                 key={m.name}
                 style={{ visibility: "hidden" }}
-                className="rounded-2xl border border-white/10 bg-white/[0.03] p-7 transition hover:border-[#c9a040]/40 md:p-9"
+                className="rounded-2xl border border-white/10 bg-white/[0.03] p-7 transition-all duration-300 hover:-translate-y-1 hover:border-[#c9a040]/40 hover:bg-white/[0.05] hover:shadow-[0_16px_48px_-16px_rgba(201,160,64,0.15)] motion-reduce:hover:translate-y-0 md:p-9"
               >
                 <p className="font-mono text-xs uppercase tracking-[0.22em] text-[#c9a040]">
                   {m.role}
@@ -189,11 +190,11 @@ export default function AboutPageClient() {
             <RevealText as="span">{t.about.closing.heading}</RevealText>
           </h2>
           <Reveal className="mt-10">
-            <Link
-              href={`/${locale}/contact`}
-              className="inline-flex min-h-[44px] items-center justify-center rounded-full bg-[#c9a040] px-8 py-3 text-sm font-semibold text-black transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a040] focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-            >
-              {t.about.closing.cta} →
+            <Link href={`/${locale}/contact`} className="btn-gold px-8">
+              <span>{t.about.closing.cta}</span>
+              <span aria-hidden="true" className="btn-arrow">
+                →
+              </span>
             </Link>
           </Reveal>
         </div>
