@@ -13,14 +13,63 @@ const INK = "#221c13";
 const GOLD = "#c9a040";
 
 /**
- * Manifesto — "El templo del conocimiento".
+ * Manifesto — "Conocimiento en tu operación".
  *
- * A stepped Mayan pyramid draws itself in line-art as the user scrolls,
- * a sun rises above it, and the manifesto copy is choreographed around
- * it. Desktop: the scene is pinned and scrubbed over ~1.6 viewports.
- * Mobile: no pin — the drawing scrubs with natural scroll and the text
- * plays once on enter. Reduced motion: everything set to final state.
+ * A geometric agave draws itself in line-art as the user scrolls: the
+ * blades fan out from the center, a golden quiote (the agave's
+ * once-in-a-lifetime flower stalk) shoots up and blooms, and a sun
+ * rises above it. Mexican pride without pre-Hispanic iconography.
+ * Desktop: the scene is pinned and scrubbed over ~1.6 viewports.
+ * Mobile: no pin — the copy stacks above the artwork, so the text
+ * scrubs with the section while the drawing gets its own scrub
+ * anchored to the SVG itself (otherwise it finishes off-screen).
+ * Reduced motion: everything set to final state.
  */
+
+const BASE_Y = 390;
+
+type Leaf = { bx: number; w: number; tx: number; ty: number; g: string };
+
+/** Blades in symmetric pairs, innermost → outermost. */
+const LEAVES: Leaf[] = [
+  { bx: 233, w: 6, tx: 204, ty: 182, g: "leaves-1" },
+  { bx: 247, w: 6, tx: 276, ty: 182, g: "leaves-1" },
+  { bx: 226, w: 7, tx: 170, ty: 205, g: "leaves-2" },
+  { bx: 254, w: 7, tx: 310, ty: 205, g: "leaves-2" },
+  { bx: 218, w: 8, tx: 118, ty: 248, g: "leaves-3" },
+  { bx: 262, w: 8, tx: 362, ty: 248, g: "leaves-3" },
+  { bx: 210, w: 8, tx: 72, ty: 302, g: "leaves-4" },
+  { bx: 270, w: 8, tx: 408, ty: 302, g: "leaves-4" },
+  { bx: 202, w: 7, tx: 46, ty: 352, g: "leaves-5" },
+  { bx: 278, w: 7, tx: 434, ty: 352, g: "leaves-5" },
+];
+
+const LEAF_GROUPS = ["leaves-1", "leaves-2", "leaves-3", "leaves-4", "leaves-5"];
+
+/**
+ * One blade: base edge → tip → base edge, with both quadratic control
+ * points bowed away from the plant's axis so the blade reads as a
+ * curved agave sabre instead of a straight spike.
+ */
+function leafPath({ bx, w, tx, ty }: Leaf): string {
+  const dx = tx - bx;
+  const dy = ty - BASE_Y;
+  // Normal of the blade's spine with a downward-outward direction.
+  let nx = dy;
+  let ny = -dx;
+  if (ny < 0) {
+    nx = -nx;
+    ny = -ny;
+  }
+  const ox = Math.round(nx * 0.11);
+  const oy = Math.round(ny * 0.11);
+  const c1x = Math.round((bx - w + tx) / 2) + ox;
+  const c1y = Math.round((BASE_Y + ty) / 2) + oy;
+  const c2x = Math.round((tx + bx + w) / 2) + ox;
+  const c2y = Math.round((ty + BASE_Y) / 2) + oy;
+  return `M${bx - w} ${BASE_Y} Q${c1x} ${c1y} ${tx} ${ty} Q${c2x} ${c2y} ${bx + w} ${BASE_Y}`;
+}
+
 export default function Manifesto() {
   const t = useT();
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -42,7 +91,7 @@ export default function Manifesto() {
     const words = Array.from(heading.querySelectorAll<HTMLElement>(".word-inner"));
     const draws = Array.from(svg.querySelectorAll<SVGPathElement>("[data-draw]"));
     const rays = Array.from(svg.querySelectorAll<SVGLineElement>("[data-ray]"));
-    const doorway = svg.querySelector<SVGPathElement>("[data-door]");
+    const bloom = svg.querySelector<SVGPathElement>("[data-bloom]");
 
     const initDraw = (p: SVGPathElement) => {
       const len = p.getTotalLength();
@@ -50,31 +99,45 @@ export default function Manifesto() {
       return len;
     };
 
-    // Timeline body shared by desktop (pinned scrub) and mobile (scrub, no pin)
-    const build = (tl: gsap.core.Timeline) => {
-      const by = (sel: string) =>
-        draws.filter((d) => d.dataset.draw === sel);
-
+    // Copy choreography. `quoteAt` differs per layout: desktop holds the
+    // quote until the drawing nears completion; mobile reveals it sooner
+    // because the drawing runs on its own trigger below the copy.
+    const buildText = (tl: gsap.core.Timeline, quoteAt: number) => {
       tl.to(eyebrow, { autoAlpha: 1, y: 0, duration: 0.3, ease: "power2.out" }, 0);
       tl.to(
         words,
         { yPercent: 0, autoAlpha: 1, duration: 0.55, stagger: 0.07, ease: "power3.out" },
         0.05
       );
-      tl.to(by("ground"), { strokeDashoffset: 0, duration: 0.35, ease: "none" }, 0.1);
-      tl.to(by("outline"), { strokeDashoffset: 0, duration: 1.5, ease: "none" }, 0.25);
-      tl.to(by("rail"), { strokeDashoffset: 0, duration: 0.6, ease: "none" }, 1.0);
-      tl.to(by("treads"), { strokeDashoffset: 0, duration: 0.55, ease: "none" }, 1.25);
-      tl.to(by("temple"), { strokeDashoffset: 0, duration: 0.45, ease: "none" }, 1.45);
-      if (doorway)
-        tl.to(doorway, { fill: GOLD, fillOpacity: 0.9, duration: 0.3 }, 1.8);
-      tl.to(by("sun"), { strokeDashoffset: 0, duration: 0.5, ease: "none" }, 1.7);
+      tl.to(quote, { autoAlpha: 1, y: 0, duration: 0.55, ease: "power3.out" }, quoteAt);
+      return tl;
+    };
+
+    // Drawing choreography, offset by `base` so it can slot into the
+    // combined pinned timeline (desktop) or run standalone (mobile).
+    const buildScene = (tl: gsap.core.Timeline, base: number) => {
+      const by = (sel: string) =>
+        draws.filter((d) => d.dataset.draw === sel);
+
+      tl.to(by("ground"), { strokeDashoffset: 0, duration: 0.35, ease: "none" }, base);
+      // Blades fan out from the center, pair by pair
+      LEAF_GROUPS.forEach((g, i) => {
+        tl.to(
+          by(g),
+          { strokeDashoffset: 0, duration: 0.45, ease: "none" },
+          base + 0.2 + i * 0.25
+        );
+      });
+      tl.to(by("stalk"), { strokeDashoffset: 0, duration: 0.4, ease: "none" }, base + 1.35);
+      tl.to(by("bloom"), { strokeDashoffset: 0, duration: 0.25, ease: "none" }, base + 1.65);
+      if (bloom)
+        tl.to(bloom, { fill: GOLD, fillOpacity: 0.9, duration: 0.25 }, base + 1.85);
+      tl.to(by("sun"), { strokeDashoffset: 0, duration: 0.5, ease: "none" }, base + 1.6);
       tl.to(
         rays,
         { autoAlpha: 1, duration: 0.22, stagger: 0.05, ease: "power1.out" },
-        1.95
+        base + 1.85
       );
-      tl.to(quote, { autoAlpha: 1, y: 0, duration: 0.55, ease: "power3.out" }, 1.7);
       return tl;
     };
 
@@ -82,6 +145,7 @@ export default function Manifesto() {
       draws.forEach(initDraw);
       gsap.set(svg, { autoAlpha: 1 });
       gsap.set(rays, { autoAlpha: 0 });
+      if (bloom) gsap.set(bloom, { fillOpacity: 0 });
       gsap.set(eyebrow, { autoAlpha: 0, y: 16 });
       gsap.set(words, { yPercent: 110, autoAlpha: 0 });
       gsap.set(quote, { autoAlpha: 0, y: 36 });
@@ -91,7 +155,7 @@ export default function Manifesto() {
       gsap.set(svg, { autoAlpha: 1 });
       gsap.set(draws, { strokeDasharray: "none", strokeDashoffset: 0 });
       gsap.set(rays, { autoAlpha: 1 });
-      if (doorway) gsap.set(doorway, { fill: GOLD, fillOpacity: 0.9 });
+      if (bloom) gsap.set(bloom, { fill: GOLD, fillOpacity: 0.9 });
       gsap.set([eyebrow, quote], { autoAlpha: 1, y: 0 });
       gsap.set(words, { yPercent: 0, autoAlpha: 1 });
     };
@@ -115,7 +179,8 @@ export default function Manifesto() {
             invalidateOnRefresh: true,
           },
         });
-        build(tl);
+        buildText(tl, 1.7);
+        buildScene(tl, 0.1);
         return () => {
           tl.scrollTrigger?.kill();
           tl.kill();
@@ -127,18 +192,32 @@ export default function Manifesto() {
       "(max-width: 767.98px) and (prefers-reduced-motion: no-preference)",
       () => {
         setInitial();
-        const tl = gsap.timeline({
+        // Copy scrubs in as the section enters.
+        const tlText = gsap.timeline({
           scrollTrigger: {
             trigger: section,
             start: "top 75%",
-            end: "bottom 95%",
+            end: "top 25%",
             scrub: 0.4,
           },
         });
-        build(tl);
+        buildText(tlText, 0.9);
+        // The drawing is anchored to the artwork itself so every stroke
+        // happens on screen while the SVG travels up the viewport.
+        const tlScene = gsap.timeline({
+          scrollTrigger: {
+            trigger: svg,
+            start: "top 88%",
+            end: "top 22%",
+            scrub: 0.4,
+          },
+        });
+        buildScene(tlScene, 0);
         return () => {
-          tl.scrollTrigger?.kill();
-          tl.kill();
+          tlText.scrollTrigger?.kill();
+          tlText.kill();
+          tlScene.scrollTrigger?.kill();
+          tlScene.kill();
         };
       }
     );
@@ -214,14 +293,14 @@ export default function Manifesto() {
             </div>
           </div>
 
-          {/* ── Pyramid scene ── */}
+          {/* ── Agave scene ── */}
           <div className="md:col-span-6">
             <svg
               ref={svgRef}
               viewBox="0 0 480 420"
               fill="none"
               role="img"
-              aria-label="Line drawing of a stepped Mayan pyramid beneath a rising sun"
+              aria-label="Line drawing of a geometric agave blooming beneath a rising sun"
               className="mx-auto w-full max-w-[300px] opacity-0 sm:max-w-[380px] md:max-w-[520px] md:max-h-[72vh]"
             >
               {/* Sun */}
@@ -263,46 +342,35 @@ export default function Manifesto() {
                 strokeWidth="1.5"
               />
 
-              {/* Stepped silhouette — one continuous stroke */}
-              <path
-                data-draw="outline"
-                d="M40 392 V348 H76 V304 H112 V260 H148 V216 H184 V172 H296 V216 H332 V260 H368 V304 H404 V348 H440 V392"
-                stroke={INK}
-                strokeWidth="2.5"
-                strokeLinejoin="miter"
-              />
+              {/* Agave blades */}
+              {LEAVES.map((leaf, i) => (
+                <path
+                  key={i}
+                  data-draw={leaf.g}
+                  d={leafPath(leaf)}
+                  stroke={INK}
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              ))}
 
-              {/* Temple crown */}
+              {/* Quiote — the agave's flower stalk */}
               <path
-                data-draw="temple"
-                d="M204 172 V128 H276 V172 M196 128 H284"
-                stroke={INK}
+                data-draw="stalk"
+                d={`M240 ${BASE_Y} V170`}
+                stroke={GOLD}
                 strokeWidth="2.5"
               />
+              {/* Bloom */}
               <path
-                data-door
-                d="M231 172 V148 H249 V172 Z"
-                stroke={INK}
+                data-draw="bloom"
+                data-bloom
+                d="M240 170 L228 154 L240 138 L252 154 Z"
+                stroke={GOLD}
                 strokeWidth="2"
                 fill={GOLD}
                 fillOpacity="0"
-              />
-
-              {/* Staircase rails */}
-              <path
-                data-draw="rail"
-                d="M216 392 V172 M264 392 V172"
-                stroke={GOLD}
-                strokeWidth="2"
-              />
-              {/* Treads */}
-              <path
-                data-draw="treads"
-                d={[...Array(10)]
-                  .map((_, i) => `M216 ${372 - i * 20} H264`)
-                  .join(" ")}
-                stroke={GOLD}
-                strokeWidth="1.5"
               />
             </svg>
           </div>

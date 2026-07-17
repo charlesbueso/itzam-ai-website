@@ -16,7 +16,9 @@ export type GlyphVariant = "assessment" | "playbook" | "support" | "brain";
  * ServiceGlyph — bespoke animated line-art for each service section.
  *
  * Strokes ([data-draw]) draw themselves in when scrolled into view;
- * nodes ([data-node]) pop in after. Ambient loops (.glyph-spin,
+ * nodes ([data-node]) pop in after. Desktop plays the sequence once on
+ * enter; mobile scrubs it with scroll (anchored to the glyph) so the
+ * drawing always happens on screen. Ambient loops (.glyph-spin,
  * .glyph-flow, .glyph-pulse — see globals.css) run continuously and
  * are disabled under prefers-reduced-motion.
  */
@@ -44,57 +46,84 @@ export default function ServiceGlyph({
     // clobber their dash pattern / flow loop) — they fade in instead.
     const fades = Array.from(svg.querySelectorAll<SVGElement>("[data-fade]"));
 
+    const setInitial = () => {
+      draws.forEach((p) => {
+        const len = p.getTotalLength();
+        gsap.set(p, { strokeDasharray: len, strokeDashoffset: len });
+      });
+      gsap.set(nodes, { autoAlpha: 0, scale: 0.4, transformOrigin: "50% 50%" });
+      gsap.set(fades, { autoAlpha: 0 });
+      gsap.set(svg, { autoAlpha: 1 });
+    };
+
+    const buildTl = (tl: gsap.core.Timeline) => {
+      tl.to(draws, {
+        strokeDashoffset: 0,
+        duration: 1.1,
+        stagger: 0.12,
+        ease: "power2.inOut",
+      });
+      tl.to(fades, { autoAlpha: 1, duration: 0.6, stagger: 0.15 }, "-=0.7");
+      tl.to(
+        nodes,
+        {
+          autoAlpha: 1,
+          scale: 1,
+          duration: 0.4,
+          stagger: 0.08,
+          ease: "back.out(2)",
+        },
+        "-=0.5"
+      );
+      return tl;
+    };
+
     const mm = gsap.matchMedia();
 
     mm.add(
-      {
-        animate: "(prefers-reduced-motion: no-preference)",
-        reduce: "(prefers-reduced-motion: reduce)",
-      },
-      (ctx) => {
-        if (ctx.conditions?.reduce) {
-          gsap.set(svg, { autoAlpha: 1 });
-          gsap.set(draws, { strokeDasharray: "none", strokeDashoffset: 0 });
-          gsap.set([...nodes, ...fades], { autoAlpha: 1, scale: 1 });
-          return;
-        }
-
-        draws.forEach((p) => {
-          const len = p.getTotalLength();
-          gsap.set(p, { strokeDasharray: len, strokeDashoffset: len });
-        });
-        gsap.set(nodes, { autoAlpha: 0, scale: 0.4, transformOrigin: "50% 50%" });
-        gsap.set(fades, { autoAlpha: 0 });
-        gsap.set(svg, { autoAlpha: 1 });
-
-        const tl = gsap.timeline({
-          scrollTrigger: { trigger: svg, start: "top 82%", once: true },
-        });
-        tl.to(draws, {
-          strokeDashoffset: 0,
-          duration: 1.1,
-          stagger: 0.12,
-          ease: "power2.inOut",
-        });
-        tl.to(fades, { autoAlpha: 1, duration: 0.6, stagger: 0.15 }, "-=0.7");
-        tl.to(
-          nodes,
-          {
-            autoAlpha: 1,
-            scale: 1,
-            duration: 0.4,
-            stagger: 0.08,
-            ease: "back.out(2)",
-          },
-          "-=0.5"
+      "(min-width: 768px) and (prefers-reduced-motion: no-preference)",
+      () => {
+        setInitial();
+        const tl = buildTl(
+          gsap.timeline({
+            scrollTrigger: { trigger: svg, start: "top 82%", once: true },
+          })
         );
-
         return () => {
           tl.scrollTrigger?.kill();
           tl.kill();
         };
       }
     );
+
+    // Mobile: scrub the drawing with scroll so it plays while the glyph
+    // is actually on screen, matching the manifesto scene's behavior.
+    mm.add(
+      "(max-width: 767.98px) and (prefers-reduced-motion: no-preference)",
+      () => {
+        setInitial();
+        const tl = buildTl(
+          gsap.timeline({
+            scrollTrigger: {
+              trigger: svg,
+              start: "top 90%",
+              end: "top 40%",
+              scrub: 0.4,
+            },
+          })
+        );
+        return () => {
+          tl.scrollTrigger?.kill();
+          tl.kill();
+        };
+      }
+    );
+
+    mm.add("(prefers-reduced-motion: reduce)", () => {
+      gsap.set(svg, { autoAlpha: 1 });
+      gsap.set(draws, { strokeDasharray: "none", strokeDashoffset: 0 });
+      gsap.set([...nodes, ...fades], { autoAlpha: 1, scale: 1 });
+    });
 
     const id = requestAnimationFrame(() => ScrollTrigger.refresh());
     return () => {

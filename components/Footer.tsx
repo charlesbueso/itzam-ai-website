@@ -5,7 +5,6 @@ import { ASSETS } from "@/lib/assets";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { LanguagePill } from "./Navbar";
 import Reveal from "./Reveal";
-import GrecaDivider from "./Greca";
 
 export default function Footer() {
   const { locale, t } = useLocale();
@@ -25,7 +24,6 @@ export default function Footer() {
 
   return (
     <footer className="relative w-full bg-black px-6 pb-10 pt-16 md:px-10 md:pb-12 md:pt-20">
-      <GrecaDivider className="mx-auto mb-14 w-full max-w-[90rem] md:mb-16" opacity={0.5} />
       <Reveal className="mx-auto w-full max-w-[90rem]">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-12">
           <div className="md:col-span-5">
@@ -33,7 +31,7 @@ export default function Footer() {
             <img
               src={ASSETS.logotypeDark}
               alt="Itzam.ai"
-              className="-ml-2 h-16 w-auto md:h-20"
+              className="-ml-1 h-9 w-auto md:h-10"
             />
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-white/60">
               {t.footer.tagline}

@@ -35,7 +35,7 @@ export default function Navbar() {
     const HIDE_THRESHOLD = 50;
     const TOP_LOCK = 60;
     const IDLE_REVEAL_MS = 600;
-    const HEADER_CENTER = 44; // vertical midpoint of the logo/hamburger row
+    const HEADER_CENTER = 42; // vertical midpoint of the logo/hamburger row
 
     lastY.current = window.scrollY;
 
@@ -118,7 +118,7 @@ export default function Navbar() {
           transform: hidden && !open ? "translateY(-100%)" : "translateY(0)",
           transition: "transform 250ms ease-out",
         }}
-        className="fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-4 px-6 py-2 md:px-10 md:py-1"
+        className="fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-4 px-6 py-4 md:px-10 md:py-5"
       >
         <Link
           href={`/${locale}`}
@@ -126,8 +126,10 @@ export default function Navbar() {
           className="flex items-center"
           onClick={() => setOpen(false)}
         >
-          {/* Both logotypes stacked; crossfade with the section theme */}
-          <span className="relative -mt-2 block h-24 md:mt-0 md:h-28">
+          {/* Both logotypes stacked; crossfade with the section theme.
+              The files are a tight-cropped ~6.3:1 wordmark, so a slim
+              height renders at a sane width. */}
+          <span className="relative block h-7 md:h-8">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={ASSETS.logotypeDark}
