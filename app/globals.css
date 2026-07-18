@@ -5,6 +5,15 @@
 :root {
   --background: #000000;
   --foreground: #ece7e7;
+  --gold: #c9a040;
+}
+
+html {
+  /* Anchor jumps (services TOC) glide instead of teleporting */
+  scroll-behavior: smooth;
+  /* Thin dark scrollbar with a gold accent (Firefox + Chromium 121+) */
+  scrollbar-color: rgba(201, 160, 64, 0.35) #000000;
+  scrollbar-width: thin;
 }
 
 html,
@@ -13,6 +22,9 @@ body {
   color: var(--foreground);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* `clip` (not `hidden`) kills stray horizontal scroll without creating a
+     scroll container — position:sticky children keep working. */
+  overflow-x: clip;
 }
 
 body {
@@ -21,6 +33,17 @@ body {
 
 * {
   box-sizing: border-box;
+}
+
+::selection {
+  background: var(--gold);
+  color: #000;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 /* RevealText — initial states (avoid flash before JS runs) */
@@ -35,4 +58,98 @@ body {
 .reveal-wrap .reveal-line {
   opacity: 0;
   visibility: hidden;
+}
+
+/* ───────────────────────── Buttons ───────────────────────── */
+
+@layer components {
+  /* Primary gold CTA — lift + glow on hover, settle on press */
+  .btn-gold {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-[#c9a040] px-7 py-3 text-sm font-semibold text-black focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a040] focus-visible:ring-offset-2 focus-visible:ring-offset-black;
+    transition:
+      transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+      filter 0.3s ease;
+  }
+  .btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 32px -8px rgba(201, 160, 64, 0.45);
+    filter: brightness(1.06);
+  }
+  .btn-gold:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 4px 16px -6px rgba(201, 160, 64, 0.35);
+  }
+  .btn-gold:disabled:hover {
+    transform: none;
+    box-shadow: none;
+    filter: none;
+  }
+  .btn-gold .btn-arrow {
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .btn-gold:hover .btn-arrow {
+    transform: translateX(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-gold:hover,
+  .btn-gold:active {
+    transform: none;
+  }
+  .btn-gold:hover .btn-arrow {
+    transform: none;
+  }
+}
+
+/* ───────────────── SVG glyph ambient loops ───────────────── */
+
+/* Slow radar sweep / orbit rotation. Origin must be set per-element
+   (SVG transforms default to the 0,0 corner, not the shape center). */
+.glyph-spin {
+  animation: glyph-spin 14s linear infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes glyph-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Flowing dashed stroke — reads as data moving along a line */
+.glyph-flow {
+  animation: glyph-flow 3.5s linear infinite;
+}
+@keyframes glyph-flow {
+  to {
+    stroke-dashoffset: -48;
+  }
+}
+
+/* Soft node pulse */
+.glyph-pulse {
+  animation: glyph-pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes glyph-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.25);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glyph-spin,
+  .glyph-flow,
+  .glyph-pulse {
+    animation: none;
+  }
 }

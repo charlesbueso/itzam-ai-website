@@ -62,7 +62,7 @@ async function resolveCompanyName(): Promise<string | null> {
 export async function AppHeader({ href, right }: Props) {
   const logo = (
     /* eslint-disable-next-line @next/next/no-img-element */
-    <img src={ASSETS.logotypeDark} alt="Itzam.ai" className="h-16 w-auto" />
+    <img src={ASSETS.logotypeDark} alt="Itzam.ai" className="h-8 w-auto" />
   );
 
   let resolvedRight = right;

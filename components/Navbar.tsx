@@ -20,19 +20,36 @@ import { Locale } from "@/lib/i18n/dictionaries";
 export default function Navbar() {
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
+  const [overLight, setOverLight] = useState(false);
   const lastY = useRef(0);
   const downAccum = useRef(0);
   const ticking = useRef(false);
   const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { locale, t } = useLocale();
+  const pathname = usePathname();
 
-  // Scroll hide/reveal
+  // Scroll hide/reveal + light-zone detection. Any section can declare
+  // itself `data-theme="light"`; when one sits under the header band the
+  // navbar swaps to its dark-on-light treatment and drops the scrim.
   useEffect(() => {
     const HIDE_THRESHOLD = 50;
     const TOP_LOCK = 60;
     const IDLE_REVEAL_MS = 600;
+    const HEADER_CENTER = 42; // vertical midpoint of the logo/hamburger row
 
     lastY.current = window.scrollY;
+
+    const checkTheme = () => {
+      const zones = document.querySelectorAll<HTMLElement>(
+        '[data-theme="light"]'
+      );
+      let light = false;
+      zones.forEach((z) => {
+        const r = z.getBoundingClientRect();
+        if (r.top < HEADER_CENTER && r.bottom > HEADER_CENTER) light = true;
+      });
+      setOverLight(light);
+    };
 
     const scheduleIdleReveal = () => {
       if (idleTimer.current) clearTimeout(idleTimer.current);
@@ -60,34 +77,40 @@ export default function Navbar() {
           if (downAccum.current >= HIDE_THRESHOLD) setHidden(true);
         }
 
+        checkTheme();
         lastY.current = y;
         ticking.current = false;
         scheduleIdleReveal();
       });
     };
 
+    checkTheme();
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", checkTheme);
     return () => {
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", checkTheme);
       if (idleTimer.current) clearTimeout(idleTimer.current);
     };
-  }, []);
+  }, [pathname]);
+
+  const lightMode = overLight && !open;
 
   return (
     <>
-      {/* Top gradient scrim — gives the logo/hamburger background
-          contrast against page content. Hidden only while the overlay
-          is open (the overlay paints its own black background). */}
+      {/* Top gradient scrim — subtle contrast for the logo/hamburger over
+          dark media. Removed entirely over light sections (the cream bg
+          provides its own contrast) and while the overlay is open. */}
       <div
         aria-hidden="true"
         style={{
-          opacity: open ? 0 : 1,
+          opacity: open || lightMode ? 0 : 1,
           transform: hidden && !open ? "translateY(-100%)" : "translateY(0)",
-          transition: "opacity 250ms ease-out, transform 250ms ease-out",
+          transition: "opacity 300ms ease-out, transform 250ms ease-out",
           background:
-            "linear-gradient(to bottom, rgba(0,0,0,0.78) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.22) 80%, rgba(0,0,0,0) 100%)",
+            "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.12) 80%, rgba(0,0,0,0) 100%)",
         }}
-        className="pointer-events-none fixed inset-x-0 top-0 z-40 h-24 md:h-28"
+        className="pointer-events-none fixed inset-x-0 top-0 z-40 h-20 md:h-24"
       />
 
       <header
@@ -95,7 +118,7 @@ export default function Navbar() {
           transform: hidden && !open ? "translateY(-100%)" : "translateY(0)",
           transition: "transform 250ms ease-out",
         }}
-        className="fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-4 px-6 py-2 md:px-10 md:py-1"
+        className="fixed inset-x-0 top-0 z-50 flex items-center justify-between gap-4 px-6 py-4 md:px-10 md:py-5"
       >
         <Link
           href={`/${locale}`}
@@ -103,12 +126,26 @@ export default function Navbar() {
           className="flex items-center"
           onClick={() => setOpen(false)}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={ASSETS.logotypeDark}
-            alt="Itzam.ai"
-            className="-mt-2 h-24 w-auto md:mt-0 md:h-28"
-          />
+          {/* Both logotypes stacked; crossfade with the section theme.
+              The files are a tight-cropped ~6.3:1 wordmark, so a slim
+              height renders at a sane width. */}
+          <span className="relative block h-7 md:h-8">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={ASSETS.logotypeDark}
+              alt="Itzam.ai"
+              className="h-full w-auto transition-opacity duration-300"
+              style={{ opacity: lightMode ? 0 : 1 }}
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={ASSETS.logotypeLight}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 h-full w-auto transition-opacity duration-300"
+              style={{ opacity: lightMode ? 1 : 0 }}
+            />
+          </span>
         </Link>
 
         <button
@@ -117,10 +154,12 @@ export default function Navbar() {
           aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
           aria-expanded={open}
           aria-controls="nav-overlay"
-          className={`relative z-[60] inline-flex h-11 w-11 items-center justify-center rounded-full border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a040] ${
+          className={`relative z-[60] inline-flex h-11 w-11 items-center justify-center rounded-full border transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#c9a040] ${
             open
               ? "border-white/30 bg-white/10 text-white"
-              : "border-white/20 bg-white/5 text-white hover:border-white/40"
+              : lightMode
+                ? "border-neutral-900/25 bg-neutral-900/[0.04] text-neutral-900 hover:border-neutral-900/50"
+                : "border-white/20 bg-white/5 text-white hover:border-white/40"
           }`}
         >
           <Hamburger open={open} />

@@ -22,7 +22,7 @@ export default function ContactPageClient() {
                 </span>
               </Reveal>
 
-              <h1 className="mt-6 text-5xl font-semibold leading-[0.95] tracking-tight text-white sm:text-6xl md:text-7xl">
+              <h1 className="mt-6 text-[clamp(3rem,6vw,6rem)] font-semibold leading-[0.95] tracking-tight text-white">
                 <RevealText as="span">{t.contact.heading}</RevealText>
               </h1>
 
