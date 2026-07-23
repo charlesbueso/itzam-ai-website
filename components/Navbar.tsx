@@ -278,6 +278,7 @@ function NavOverlay({
   const links: { href: string; label: string }[] = [
     { href: `/${locale}`, label: t.nav.links.home },
     { href: `/${locale}/services`, label: t.nav.links.services },
+    { href: `/${locale}/assessment`, label: t.nav.links.assessment },
     { href: `/${locale}/about`, label: t.nav.links.about },
     { href: `/${locale}/contact`, label: t.nav.links.contact },
   ];

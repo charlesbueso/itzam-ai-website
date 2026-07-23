@@ -8,7 +8,7 @@ export type Dictionary = {
   meta: { title: string; description: string };
   nav: {
     home: string; cta: string; switchLanguage: string; openMenu: string; closeMenu: string;
-    links: { home: string; services: string; about: string; contact: string };
+    links: { home: string; services: string; about: string; contact: string; assessment: string };
   };
   common: { learnMore: string; requestQuote: string; talkToUs: string; backToTop: string; comingSoon: string; addOn: string };
   home: {
@@ -35,6 +35,29 @@ export type Dictionary = {
     meta: { title: string; description: string };
     eyebrow: string; heading: string; sub: string;
     direct: { label: string; email: string; responseLabel: string; response: string; locationLabel: string; location: string };
+  };
+  assessment: {
+    meta: { title: string; description: string };
+    hero: { eyebrow: string; heading1: string; heading2: string; sub: string; meta: string };
+    progress: string;
+    sections: { company: string; tools: string; process: string };
+    otherPlaceholder: string;
+    optional: string;
+    wish: { label: string; placeholder: string };
+    contactBlock: { heading: string; sub: string; fields: { name: string; role: string; company: string; email: string; phone: string }; hint: string };
+    submit: string; submitting: string;
+    errors: { missing: string; rateLimited: string; generic: string };
+    score: {
+      pill: string; heading: string; scoreLabel: string;
+      bands: { explorer: { label: string; desc: string }; in_progress: { label: string; desc: string }; advanced: { label: string; desc: string } };
+      dims: { data_crm: string; playbook: string; proposals: string; response_speed: string; ai_maturity: string };
+      dimsHeading: string;
+    };
+    next: {
+      heading: string; body: string; emailNote: string;
+      cta: { heading: string; body: string; button: string };
+      disclaimer: string;
+    };
   };
   footer: { tagline: string; sectionsLabel: string; contactLabel: string; languageLabel: string; rights: string; legalLabel: string; privacyLink: string; termsLink: string };
   legal: {
@@ -79,7 +102,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       switchLanguage: "Switch language",
       openMenu: "Open menu",
       closeMenu: "Close menu",
-      links: { home: "Home", services: "Services", about: "About", contact: "Contact" },
+      links: { home: "Home", services: "Services", about: "About", contact: "Contact", assessment: "Free AI Assessment" },
     },
     common: { learnMore: "Learn more", requestQuote: "Request a quote", talkToUs: "Talk to us", backToTop: "Back to top", comingSoon: "Coming soon", addOn: "Add-on" },
     home: {
@@ -203,6 +226,69 @@ export const dictionaries: Record<Locale, Dictionary> = {
       sub: "Tell us what you're building, or what's slowing you down. We'll come back with a clear-eyed take and a concrete path forward.",
       direct: { label: "Direct contact", email: "contact@itzam.ai", responseLabel: "Response time", response: "Within 48 hours, every business day.", locationLabel: "Based in", location: "Mexico City — working across LatAm." },
     },
+    assessment: {
+      meta: {
+        title: "Free AI Assessment — Instant AI diagnostic for your sales team",
+        description: "Answer 14 quick questions and get your AI Sales Readiness Score instantly, plus a personalized diagnostic with your top automation opportunities. Free, no strings attached.",
+      },
+      hero: {
+        eyebrow: "Free AI Assessment · 5 min",
+        heading1: "Find out where AI can",
+        heading2: "move your sales.",
+        sub: "Answer a few quick questions and get your AI Sales Readiness Score instantly — plus a personalized diagnostic with your biggest automation opportunities, on screen and in your inbox.",
+        meta: "Free · No commitment · Instant score + personalized report",
+      },
+      progress: "{n} of {total} answered",
+      sections: { company: "Your company", tools: "Tools & leads", process: "Process & bottlenecks" },
+      otherPlaceholder: "Which one?",
+      optional: "Optional",
+      wish: {
+        label: "If you could fix ONE thing in your sales operation, what would it be?",
+        placeholder: "E.g. stop my reps from wasting hours on quotes…",
+      },
+      contactBlock: {
+        heading: "Where do we send your diagnostic?",
+        sub: "Your score shows instantly on screen. The full personalized report also lands in your inbox.",
+        fields: { name: "Full name", role: "Role", company: "Company", email: "Work email", phone: "Phone / WhatsApp (optional)" },
+        hint: "Zero spam. We only use this to send your report and follow up if you ask us to.",
+      },
+      submit: "See my score",
+      submitting: "Calculating…",
+      errors: {
+        missing: "Please answer the required questions and complete your contact info.",
+        rateLimited: "Too many submissions from this connection. Try again in a bit.",
+        generic: "Something went wrong. Please try again.",
+      },
+      score: {
+        pill: "Your result is ready",
+        heading: "Your AI Sales Readiness Score",
+        scoreLabel: "out of 100",
+        bands: {
+          explorer: { label: "Explorer", desc: "You're getting started. There are big, high-impact opportunities ready to capture — the challenge is knowing which to attack first." },
+          in_progress: { label: "In motion", desc: "You have foundations. With the right processes automated, you can make a real jump in commercial productivity this quarter." },
+          advanced: { label: "Advanced", desc: "You're ahead of the pack. Here AI is about sharpening and scaling what already works — and not losing your edge." },
+        },
+        dims: {
+          data_crm: "Data & CRM",
+          playbook: "Documented sales process",
+          proposals: "Proposals & quotes",
+          response_speed: "Response speed",
+          ai_maturity: "AI maturity",
+        },
+        dimsHeading: "Your five dimensions",
+      },
+      next: {
+        heading: "Your personalized diagnostic is on the way",
+        body: "Our team reviews your answers and prepares your diagnostic by hand — your top automation opportunities and a clear starting plan. It lands in your inbox within one business day.",
+        emailNote: "We'll send it to {email}.",
+        cta: {
+          heading: "Don't want to wait?",
+          body: "The complete AI Opportunity Assessment goes far beyond this: 2 weeks, a 10–12 page report and an actionable plan with your 3–5 highest-impact opportunities — prioritized, with the route to implement them.",
+          button: "Talk to us",
+        },
+        disclaimer: "This free assessment is an orientation tool and does not replace the full AI Opportunity Assessment.",
+      },
+    },
     footer: { tagline: "Intelligence, deployed — across LatAm.", sectionsLabel: "Sections", contactLabel: "Contact", languageLabel: "Language", rights: "All rights reserved.", legalLabel: "Legal", privacyLink: "Privacy Policy", termsLink: "Terms and Conditions" },
     legal: {
       privacy: {
@@ -265,7 +351,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       switchLanguage: "Cambiar idioma",
       openMenu: "Abrir menú",
       closeMenu: "Cerrar menú",
-      links: { home: "Inicio", services: "Servicios", about: "Nosotros", contact: "Contacto" },
+      links: { home: "Inicio", services: "Servicios", about: "Nosotros", contact: "Contacto", assessment: "AI Assessment Gratis" },
     },
     common: { learnMore: "Conocer más", requestQuote: "Solicitar cotización", talkToUs: "Hablemos", backToTop: "Volver arriba", comingSoon: "Próximamente", addOn: "Add-on" },
     home: {
@@ -384,6 +470,69 @@ export const dictionaries: Record<Locale, Dictionary> = {
       heading: "Hablemos.",
       sub: "Cuéntanos qué estás construyendo, o qué te está frenando. Volvemos con una lectura clara y un camino concreto.",
       direct: { label: "Contacto directo", email: "contact@itzam.ai", responseLabel: "Tiempo de respuesta", response: "En menos de 48 horas, todo día hábil.", locationLabel: "Ubicación", location: "Ciudad de México — operando en todo LatAm." },
+    },
+    assessment: {
+      meta: {
+        title: "AI Assessment Gratis — Diagnóstico instantáneo de IA para tu equipo de ventas",
+        description: "Responde 14 preguntas rápidas y obtén tu AI Sales Readiness Score al instante, más un diagnóstico personalizado con tus mayores oportunidades de automatización. Gratis y sin compromiso.",
+      },
+      hero: {
+        eyebrow: "AI Assessment Gratis · 5 min",
+        heading1: "Descubre dónde la IA puede",
+        heading2: "impactar tus ventas.",
+        sub: "Responde unas preguntas rápidas y obtén tu AI Sales Readiness Score al instante — más un diagnóstico personalizado con tus mayores oportunidades de automatización, en pantalla y en tu correo.",
+        meta: "Gratis · Sin compromiso · Score al instante + reporte personalizado",
+      },
+      progress: "{n} de {total} respondidas",
+      sections: { company: "Tu empresa", tools: "Herramientas y leads", process: "Proceso y cuellos de botella" },
+      otherPlaceholder: "¿Cuál?",
+      optional: "Opcional",
+      wish: {
+        label: "Si pudieras resolver UNA cosa en tu operación de ventas, ¿cuál sería?",
+        placeholder: "Ej: que mis vendedores dejen de perder horas en cotizaciones…",
+      },
+      contactBlock: {
+        heading: "¿A dónde te enviamos tu diagnóstico?",
+        sub: "Tu score aparece al instante en pantalla. El reporte personalizado completo también llega a tu correo.",
+        fields: { name: "Nombre completo", role: "Puesto", company: "Empresa", email: "Correo de trabajo", phone: "Celular / WhatsApp (opcional)" },
+        hint: "Cero spam. Solo lo usamos para enviarte tu reporte y dar seguimiento si tú lo pides.",
+      },
+      submit: "Ver mi score",
+      submitting: "Calculando…",
+      errors: {
+        missing: "Responde las preguntas obligatorias y completa tus datos de contacto.",
+        rateLimited: "Demasiados envíos desde esta conexión. Inténtalo de nuevo en un rato.",
+        generic: "Algo salió mal. Inténtalo de nuevo.",
+      },
+      score: {
+        pill: "Tu resultado está listo",
+        heading: "Tu AI Sales Readiness Score",
+        scoreLabel: "de 100",
+        bands: {
+          explorer: { label: "Explorador", desc: "Estás empezando. Hay oportunidades grandes y de alto impacto listas para capturar — el reto es saber cuál atacar primero." },
+          in_progress: { label: "En marcha", desc: "Ya tienes bases. Con los procesos correctos automatizados, puedes dar un salto importante en productividad comercial este trimestre." },
+          advanced: { label: "Avanzado", desc: "Vas adelante del promedio. Aquí la IA sirve para afinar y escalar lo que ya funciona — y no perder ventaja." },
+        },
+        dims: {
+          data_crm: "Datos y CRM",
+          playbook: "Proceso de ventas documentado",
+          proposals: "Propuestas y cotizaciones",
+          response_speed: "Velocidad de respuesta",
+          ai_maturity: "Madurez en IA",
+        },
+        dimsHeading: "Tus cinco dimensiones",
+      },
+      next: {
+        heading: "Tu diagnóstico personalizado va en camino",
+        body: "Nuestro equipo revisa tus respuestas y prepara tu diagnóstico a mano — tus mayores oportunidades de automatización y un plan claro para arrancar. Llega a tu correo en menos de un día hábil.",
+        emailNote: "Te lo enviamos a {email}.",
+        cta: {
+          heading: "¿No quieres esperar?",
+          body: "El AI Opportunity Assessment completo va mucho más allá de esto: 2 semanas, un reporte de 10–12 páginas y un plan accionable con tus 3–5 oportunidades de mayor impacto — priorizadas y con la ruta para implementarlas.",
+          button: "Hablemos",
+        },
+        disclaimer: "Este assessment gratuito es una herramienta orientativa y no sustituye el AI Opportunity Assessment completo.",
+      },
     },
     footer: { tagline: "Inteligencia, en producción — en toda LatAm.", sectionsLabel: "Secciones", contactLabel: "Contacto", languageLabel: "Idioma", rights: "Todos los derechos reservados.", legalLabel: "Legal", privacyLink: "Aviso de Privacidad", termsLink: "Términos y Condiciones" },
     legal: {

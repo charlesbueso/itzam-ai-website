@@ -252,3 +252,91 @@ export function contactConfirmationEmail(opts: {
     }),
   };
 }
+
+/**
+ * Free AI Assessment — confirmation to the lead. Sets the expectation that a
+ * personalized diagnostic is on its way (prepared and sent by the team).
+ */
+export function assessmentConfirmationEmail(opts: {
+  name: string;
+  score: number;
+  locale: "es" | "en";
+}): { subject: string; html: string; text: string } {
+  const en = opts.locale === "en";
+  const firstName = htmlEscape(opts.name.split(/\s+/)[0] || opts.name);
+
+  const body = en
+    ? `
+      <p style="margin:0 0 16px 0;font-size:18px;font-weight:bold;">Thanks, ${firstName} — we got your assessment.</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 16px 0;">
+        <tr><td align="center" style="background:#0a0a0a;border-radius:8px;padding:18px;">
+          <div style="color:#999999;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Your AI Sales Readiness Score</div>
+          <div style="color:#c9a14a;font-size:40px;font-weight:bold;line-height:1.1;">${opts.score}<span style="font-size:18px;color:#777777;">/100</span></div>
+        </td></tr>
+      </table>
+      <p style="margin:0 0 16px 0;">Our team is preparing your <strong>personalized diagnostic</strong> — your top automation opportunities and a clear starting plan. You'll receive it by email within one business day.</p>
+      <p style="margin:0 0 16px 0;">Have questions in the meantime? Just reply to this email — it goes straight to our inbox.</p>
+      <p style="margin:24px 0 0 0;">— The Itzam.ai team</p>
+    `
+    : `
+      <p style="margin:0 0 16px 0;font-size:18px;font-weight:bold;">Gracias, ${firstName} — recibimos tu assessment.</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 16px 0;">
+        <tr><td align="center" style="background:#0a0a0a;border-radius:8px;padding:18px;">
+          <div style="color:#999999;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;">Tu AI Sales Readiness Score</div>
+          <div style="color:#c9a14a;font-size:40px;font-weight:bold;line-height:1.1;">${opts.score}<span style="font-size:18px;color:#777777;">/100</span></div>
+        </td></tr>
+      </table>
+      <p style="margin:0 0 16px 0;">Nuestro equipo está preparando tu <strong>diagnóstico personalizado</strong> — tus mayores oportunidades de automatización y un plan claro para arrancar. Lo recibirás por correo en menos de un día hábil.</p>
+      <p style="margin:0 0 16px 0;">¿Dudas mientras tanto? Responde a este correo — llega directo a nuestra bandeja.</p>
+      <p style="margin:24px 0 0 0;">— El equipo de Itzam.ai</p>
+    `;
+
+  return {
+    subject: en
+      ? `${firstName}, your AI assessment is in — diagnostic on the way`
+      : `${firstName}, recibimos tu assessment — tu diagnóstico va en camino`,
+    text: en
+      ? `Thanks, ${opts.name}.\n\nYour AI Sales Readiness Score: ${opts.score}/100.\n\nOur team is preparing your personalized diagnostic and will email it within one business day.\n\nReply to this email anytime.\n\n— Itzam.ai`
+      : `Gracias, ${opts.name}.\n\nTu AI Sales Readiness Score: ${opts.score}/100.\n\nNuestro equipo está preparando tu diagnóstico personalizado y te lo enviará por correo en menos de un día hábil.\n\nResponde a este correo cuando quieras.\n\n— Itzam.ai`,
+    html: renderBrandedEmail({
+      body,
+      preheader: en
+        ? `Your score: ${opts.score}/100 — your personalized diagnostic is on the way.`
+        : `Tu score: ${opts.score}/100 — tu diagnóstico personalizado va en camino.`,
+    }),
+  };
+}
+
+/** Internal notification when someone completes the Free AI Assessment. */
+export function assessmentInternalEmail(opts: {
+  name: string;
+  email: string;
+  company: string;
+  role: string;
+  score: number;
+  band: string;
+  bottleneck: string;
+  wish: string;
+}): { subject: string; html: string; text: string } {
+  const body = `
+    <p style="margin:0 0 16px 0;font-size:18px;font-weight:bold;">Free AI Assessment completado</p>
+    <p style="margin:0 0 8px 0;"><strong>Nombre:</strong> ${htmlEscape(opts.name)}</p>
+    <p style="margin:0 0 8px 0;"><strong>Email:</strong> <a href="mailto:${htmlEscape(opts.email)}" style="color:#c9a14a;">${htmlEscape(opts.email)}</a></p>
+    <p style="margin:0 0 8px 0;"><strong>Empresa:</strong> ${htmlEscape(opts.company)}</p>
+    <p style="margin:0 0 8px 0;"><strong>Puesto:</strong> ${htmlEscape(opts.role)}</p>
+    <p style="margin:0 0 8px 0;"><strong>Score:</strong> ${opts.score}/100 (${htmlEscape(opts.band)})</p>
+    <p style="margin:0 0 8px 0;"><strong>Cuello de botella #1:</strong> ${htmlEscape(opts.bottleneck)}</p>
+    ${opts.wish ? `<p style="margin:0 0 16px 0;"><strong>Deseo:</strong> ${htmlEscape(opts.wish)}</p>` : ""}
+    <p style="margin:16px 0 0 0;font-size:13px;color:#666666;">Respuestas completas en la nota del contacto en HubSpot y en Supabase (self_assessments).</p>
+    ${brandButton({ href: `mailto:${opts.email}`, label: "Responder al lead" })}
+  `;
+
+  return {
+    subject: `[Itzam] Free Assessment — ${opts.name} (${opts.company}) · ${opts.score}/100`,
+    text: `Free AI Assessment completado\n\nNombre: ${opts.name}\nEmail: ${opts.email}\nEmpresa: ${opts.company}\nPuesto: ${opts.role}\nScore: ${opts.score}/100 (${opts.band})\nCuello #1: ${opts.bottleneck}${opts.wish ? `\nDeseo: ${opts.wish}` : ""}`,
+    html: renderBrandedEmail({
+      body,
+      preheader: `${opts.name} de ${opts.company} — score ${opts.score}/100.`,
+    }),
+  };
+}
