@@ -4,6 +4,7 @@ import { z } from "zod";
 import { SELF_QUESTIONS, type SelfAnswers } from "@/lib/assessment/questions";
 import { computeScore } from "@/lib/assessment/scoring";
 import { sendToSheet } from "@/lib/assessment/sheet";
+import { generateAndNotifyReport } from "@/lib/assessment/pipeline";
 import { upsertContact, createNoteForContact, nameFrom } from "@/lib/hubspot/client";
 import {
   getResend,
@@ -12,12 +13,12 @@ import {
   safeHeader,
   htmlEscape,
 } from "@/lib/email/resend";
-import {
-  assessmentConfirmationEmail,
-  assessmentInternalEmail,
-} from "@/lib/email/templates";
+import { assessmentConfirmationEmail } from "@/lib/email/templates";
 
 export const runtime = "nodejs";
+// The gated report pipeline (Haiku + Sonnet 5 + PDF + Drive + email) runs in
+// waitUntil after the response; give it headroom (capped to the plan limit).
+export const maxDuration = 60;
 
 /**
  * POST /api/assessment — self-serve Free AI Assessment submission.
@@ -127,14 +128,10 @@ export async function POST(req: Request) {
   // past the response so these complete on Vercel.
   const resend = getResend();
   const { firstname, lastname } = nameFrom(contact.name);
-  const bottleneckKey = String((parsed.answers as SelfAnswers).bottleneck_1 || "");
-  const bottleneckLabel =
-    SELF_QUESTIONS.find((q) => q.key === "bottleneck_1")
-      ?.options.find((o) => o.value === bottleneckKey)?.label_es || bottleneckKey;
 
   waitUntil(
     (async () => {
-      // HubSpot contact + timeline note.
+      // HubSpot contact + timeline note with the full answers.
       const hs = await upsertContact({
         email: contact.email,
         firstname,
@@ -177,47 +174,35 @@ export async function POST(req: Request) {
         console.warn("[assessment] hubspot contact sync failed:", hs.error);
       }
 
-      if (!resend) return;
-
-      // Confirmation email to the lead.
-      const leadTpl = assessmentConfirmationEmail({
-        name: contact.name,
-        score: score.score,
-        locale: parsed.locale,
-      });
-      const { error: leadErr } = await resend.emails.send({
-        from: RESEND_FROM,
-        to: contact.email,
-        replyTo: RESEND_REPLY_TO,
-        subject: safeHeader(leadTpl.subject),
-        html: leadTpl.html,
-        text: leadTpl.text,
-      });
-      if (leadErr) console.error("[assessment] lead confirmation email failed:", leadErr.message);
-
-      // Internal notify.
-      const notifyTo = process.env.INTERNAL_NOTIFY_EMAIL;
-      if (notifyTo) {
-        const internalTpl = assessmentInternalEmail({
+      // Confirmation email to the lead (score received, diagnostic on the way).
+      if (resend) {
+        const leadTpl = assessmentConfirmationEmail({
           name: contact.name,
-          email: contact.email,
-          company: contact.company,
-          role: contact.role,
           score: score.score,
-          band: score.band,
-          bottleneck: bottleneckLabel,
-          wish: parsed.wish.trim(),
+          locale: parsed.locale,
         });
-        const { error: notifyErr } = await resend.emails.send({
+        const { error: leadErr } = await resend.emails.send({
           from: RESEND_FROM,
-          to: notifyTo,
-          replyTo: contact.email,
-          subject: safeHeader(internalTpl.subject),
-          html: internalTpl.html,
-          text: internalTpl.text,
+          to: contact.email,
+          replyTo: RESEND_REPLY_TO,
+          subject: safeHeader(leadTpl.subject),
+          html: leadTpl.html,
+          text: leadTpl.text,
         });
-        if (notifyErr) console.error("[assessment] internal notify failed:", notifyErr.message);
+        if (leadErr) console.error("[assessment] lead confirmation email failed:", leadErr.message);
       }
+
+      // Gated report pipeline — sends the team notification itself (with the
+      // generated PDF, or the reason it was skipped/flagged).
+      await generateAndNotifyReport({
+        locale: parsed.locale,
+        contact,
+        answers: parsed.answers as SelfAnswers,
+        otherTexts: parsed.otherTexts,
+        wish: parsed.wish.trim(),
+        score,
+        ip,
+      });
     })().catch((e) => console.error("[assessment] background task threw", e))
   );
 

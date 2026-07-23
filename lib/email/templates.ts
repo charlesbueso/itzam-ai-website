@@ -307,8 +307,53 @@ export function assessmentConfirmationEmail(opts: {
   };
 }
 
-/** Internal notification when someone completes the Free AI Assessment. */
-export function assessmentInternalEmail(opts: {
+/** Outcome of the report pipeline, surfaced to the team notification. */
+export type ReportStatus =
+  | "generated"
+  | "skipped_personal_email"
+  | "skipped_rate_limit"
+  | "flagged_not_legit"
+  | "generation_failed"
+  | "disabled";
+
+const STATUS_COPY: Record<ReportStatus, { emoji: string; label: string; note: string }> = {
+  generated: {
+    emoji: "✅",
+    label: "Reporte generado",
+    note: "El PDF está en Drive, adjunto aquí. Revísalo y envíalo al lead.",
+  },
+  skipped_personal_email: {
+    emoji: "✋",
+    label: "No generado — correo personal",
+    note: "El correo es de un proveedor gratuito (gmail/hotmail/etc.). No se gastó API. Genera el reporte a mano si el lead es real.",
+  },
+  skipped_rate_limit: {
+    emoji: "✋",
+    label: "No generado — límite de uso",
+    note: "Se alcanzó el límite de generación para este correo/IP. Revisa por posible abuso o duplicado.",
+  },
+  flagged_not_legit: {
+    emoji: "⚠️",
+    label: "No generado — respuestas sospechosas",
+    note: "El chequeo de IA marcó las respuestas como posiblemente inventadas. No se gastó API en el reporte. Revísalo a mano.",
+  },
+  generation_failed: {
+    emoji: "❌",
+    label: "Falló la generación",
+    note: "Hubo un error generando el reporte. El lead quedó guardado; genera el reporte a mano.",
+  },
+  disabled: {
+    emoji: "ℹ️",
+    label: "Generación deshabilitada",
+    note: "ANTHROPIC_API_KEY no está configurada. El lead quedó guardado; genera el reporte a mano.",
+  },
+};
+
+/**
+ * Team notification for a Free AI Assessment lead. Carries the report status;
+ * when generated, the caller attaches the PDF and passes the Drive link.
+ */
+export function assessmentTeamEmail(opts: {
   name: string;
   email: string;
   company: string;
@@ -317,26 +362,32 @@ export function assessmentInternalEmail(opts: {
   band: string;
   bottleneck: string;
   wish: string;
+  status: ReportStatus;
+  driveUrl?: string;
+  legitReason?: string;
 }): { subject: string; html: string; text: string } {
+  const st = STATUS_COPY[opts.status];
   const body = `
-    <p style="margin:0 0 16px 0;font-size:18px;font-weight:bold;">Free AI Assessment completado</p>
+    <p style="margin:0 0 4px 0;font-size:18px;font-weight:bold;">${st.emoji} ${htmlEscape(st.label)}</p>
+    <p style="margin:0 0 16px 0;font-size:14px;color:#555555;">${htmlEscape(st.note)}</p>
     <p style="margin:0 0 8px 0;"><strong>Nombre:</strong> ${htmlEscape(opts.name)}</p>
     <p style="margin:0 0 8px 0;"><strong>Email:</strong> <a href="mailto:${htmlEscape(opts.email)}" style="color:#c9a14a;">${htmlEscape(opts.email)}</a></p>
     <p style="margin:0 0 8px 0;"><strong>Empresa:</strong> ${htmlEscape(opts.company)}</p>
     <p style="margin:0 0 8px 0;"><strong>Puesto:</strong> ${htmlEscape(opts.role)}</p>
     <p style="margin:0 0 8px 0;"><strong>Score:</strong> ${opts.score}/100 (${htmlEscape(opts.band)})</p>
     <p style="margin:0 0 8px 0;"><strong>Cuello de botella #1:</strong> ${htmlEscape(opts.bottleneck)}</p>
-    ${opts.wish ? `<p style="margin:0 0 16px 0;"><strong>Deseo:</strong> ${htmlEscape(opts.wish)}</p>` : ""}
-    <p style="margin:16px 0 0 0;font-size:13px;color:#666666;">Respuestas completas en la nota del contacto en HubSpot y en Supabase (self_assessments).</p>
-    ${brandButton({ href: `mailto:${opts.email}`, label: "Responder al lead" })}
+    ${opts.wish ? `<p style="margin:0 0 8px 0;"><strong>Deseo:</strong> ${htmlEscape(opts.wish)}</p>` : ""}
+    ${opts.legitReason ? `<p style="margin:0 0 8px 0;color:#a15c00;"><strong>Chequeo IA:</strong> ${htmlEscape(opts.legitReason)}</p>` : ""}
+    ${opts.driveUrl ? brandButton({ href: opts.driveUrl, label: "Abrir reporte en Drive" }) : ""}
+    <p style="margin:16px 0 0 0;font-size:13px;color:#666666;">Respuestas completas en la nota del contacto en HubSpot y en el Sheet de assessments.</p>
   `;
 
   return {
-    subject: `[Itzam] Free Assessment — ${opts.name} (${opts.company}) · ${opts.score}/100`,
-    text: `Free AI Assessment completado\n\nNombre: ${opts.name}\nEmail: ${opts.email}\nEmpresa: ${opts.company}\nPuesto: ${opts.role}\nScore: ${opts.score}/100 (${opts.band})\nCuello #1: ${opts.bottleneck}${opts.wish ? `\nDeseo: ${opts.wish}` : ""}`,
+    subject: `[Itzam] ${st.emoji} ${opts.company} — ${opts.score}/100 · ${st.label}`,
+    text: `${st.label}\n${st.note}\n\nNombre: ${opts.name}\nEmail: ${opts.email}\nEmpresa: ${opts.company}\nPuesto: ${opts.role}\nScore: ${opts.score}/100 (${opts.band})\nCuello #1: ${opts.bottleneck}${opts.wish ? `\nDeseo: ${opts.wish}` : ""}${opts.driveUrl ? `\nDrive: ${opts.driveUrl}` : ""}`,
     html: renderBrandedEmail({
       body,
-      preheader: `${opts.name} de ${opts.company} — score ${opts.score}/100.`,
+      preheader: `${st.label} — ${opts.company} (${opts.score}/100)`,
     }),
   };
 }
