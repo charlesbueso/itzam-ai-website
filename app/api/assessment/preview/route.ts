@@ -1,31 +1,36 @@
 import { NextResponse } from "next/server";
 import { renderReportPdf, type ReportPdfData } from "@/lib/assessment/pdf";
+import { renderReportDocx } from "@/lib/assessment/docx";
 import type { ReportContent } from "@/lib/assessment/report";
 import type { ScoreResult } from "@/lib/assessment/scoring";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
 /**
- * Dev-only PDF preview. Renders the report template with sample content so the
- * team can iterate on the layout without spending model tokens. Returns 404 in
- * production. Add ?locale=en for the English template.
+ * Dev-only report preview. Renders the template with sample content so the team
+ * can iterate on the layout without spending model tokens. Returns 404 in
+ * production. Query: ?locale=en, ?format=docx.
  */
 export async function GET(req: Request) {
   if (process.env.NODE_ENV === "production") {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
-  const locale = new URL(req.url).searchParams.get("locale") === "en" ? "en" : "es";
+  const params = new URL(req.url).searchParams;
+  const locale = params.get("locale") === "en" ? "en" : "es";
+  const wantDocx = params.get("format") === "docx";
 
   const score: ScoreResult = {
-    score: 38,
-    band: "in_progress",
+    score: 63,
+    band: "building",
     dimensions: [
-      { key: "playbook", value: 10 },
-      { key: "proposals", value: 14 },
-      { key: "response_speed", value: 28 },
-      { key: "data_crm", value: 38 },
-      { key: "ai_maturity", value: 47 },
+      { key: "response_speed", value: 6 },
+      { key: "documented_process", value: 55 },
+      { key: "proposals", value: 57 },
+      { key: "ai_maturity", value: 80 },
+      { key: "data_crm", value: 82 },
     ],
   };
 
@@ -49,7 +54,7 @@ export async function GET(req: Request) {
     ],
     dimensions: {
       data_crm: { status: "A ordenar", observation: "Tienen HubSpot, pero desordenado y subutilizado.", cost: "reportes poco confiables y automatizaciones que no despegan porque los datos no están limpios. Es la base sobre la que se construye todo lo demás." },
-      playbook: { status: "Crítico", observation: "El proceso no está documentado; depende de cada vendedor.", cost: "onboarding lento, resultados inconsistentes y conocimiento que se va con cada persona. Es el hallazgo más urgente." },
+      documented_process: { status: "Sin sistematizar", observation: "El proceso existe pero está parcialmente documentado.", cost: "onboarding lento, resultados inconsistentes y conocimiento que se va con cada persona." },
       proposals: { status: "Alto potencial", observation: "Se elaboran manualmente desde cero.", cost: "horas por deal y cierres que se retrasan. Es el proceso con mayor retorno inmediato al automatizarse: de horas a minutos." },
       response_speed: { status: "A mejorar", observation: "Responden en horas o al día siguiente.", cost: "en un canal competitivo, el primero en responder suele ganar el deal — y en LatAm el cliente espera respuesta casi inmediata por WhatsApp." },
       ai_maturity: { status: "En marcha", observation: "Ya usan IA de forma informal (ChatGPT).", cost: "el siguiente paso es pasar de uso ad-hoc a procesos con IA integrada que rindan de forma consistente." },
@@ -83,6 +88,17 @@ export async function GET(req: Request) {
     score,
     content,
   };
+
+  if (wantDocx) {
+    const docx = await renderReportDocx(data);
+    return new NextResponse(new Uint8Array(docx), {
+      status: 200,
+      headers: {
+        "Content-Type": DOCX_MIME,
+        "Content-Disposition": 'attachment; filename="assessment-preview.docx"',
+      },
+    });
+  }
 
   const pdf = await renderReportPdf(data);
   return new NextResponse(new Uint8Array(pdf), {

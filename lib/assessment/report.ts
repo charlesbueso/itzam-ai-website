@@ -68,7 +68,7 @@ export const ReportSchema = z.object({
   dimensions: z
     .object({
       data_crm: DimNote,
-      playbook: DimNote,
+      documented_process: DimNote,
       proposals: DimNote,
       response_speed: DimNote,
       ai_maturity: DimNote,
@@ -91,12 +91,14 @@ export const ReportSchema = z.object({
 
 export type ReportContent = z.infer<typeof ReportSchema>;
 
-const SERVICE_CATALOG = `Itzam solution names you may map opportunities to (use the exact names):
-- "Sales Playbook + RFP Generator" — proposals, quotes, RFP drafting
-- "Automatización de seguimiento" / "Follow-up automation" — nurturing by email + WhatsApp
-- "Customer Support Engine" — 24/7 AI support on WhatsApp Business + web chat
-- "Company AI Brain" / "Business Brain Lab" — centralized company knowledge, 24/7
-- "Automatización de reportes y pipeline" / "Pipeline & reporting automation" — CRM hygiene, reporting`;
+const SERVICE_CATALOG = `Map each opportunity to the Itzam solution for that bottleneck (use these exact solution names):
+- bottleneck "lead_gen" (generating/qualifying leads) -> "Customer Support Engine" (24/7 AI web chat that qualifies leads)
+- bottleneck "response" (responding on time)          -> "Customer Support Engine"
+- bottleneck "followup" (following up)                -> "Follow-up Automation" / "Automatización de seguimiento" (email + WhatsApp sequences)
+- bottleneck "proposals" (proposals/quotes/RFPs)      -> "Sales Playbook + RFP Generator"
+- bottleneck "knowledge" (scattered knowledge)        -> "Company AI Brain"
+- bottleneck "pipeline" (pipeline/reporting/admin)    -> "Company AI Brain" / reporting automation
+Opportunity #1 must map to the client's #1 bottleneck (q9). Reinforce it with the lowest-scoring dimension.`;
 
 function systemPrompt(locale: "es" | "en"): string {
   if (locale === "en") {
@@ -114,6 +116,8 @@ Rules:
 - Do not restate the numeric score in prose; it is rendered separately.
 - Match the requested counts exactly (2 intro paragraphs, 3 findings, 3 opportunities, 3 quick wins, 3 strategic projects).
 - Be concise — this renders into a fixed one-page-per-section PDF. Keep paragraphs to 2-3 sentences; quick wins and strategic projects are short phrases, not paragraphs. Use the shortest wording that keeps the insight.
+- If a value-at-stake MXN figure is provided, weave it into the cost_callout, phrased conditionally ("could be exposing on the order of…") — never as promised or lost revenue. If none is provided, do not invent one; speak only about volume and time.
+- If the lead stated a "one thing to fix" or extra comments, reflect that back in the executive summary so they feel read.
 
 ${SERVICE_CATALOG}`;
   }
@@ -131,6 +135,8 @@ Reglas:
 - No repitas el número del score en la prosa; se muestra por separado.
 - Respeta exactamente las cantidades pedidas (2 párrafos de intro, 3 hallazgos, 3 oportunidades, 3 ganancias rápidas, 3 proyectos de fondo).
 - Sé conciso — esto se renderiza en un PDF de una página por sección. Mantén los párrafos en 2-3 oraciones; las ganancias rápidas y los proyectos de fondo son frases cortas, no párrafos. Usa la redacción más breve que conserve la idea.
+- Si se proporciona una cifra de valor en riesgo (MXN), inclúyela en el cost_callout, redactada en condicional ("podría estar exponiendo del orden de…") — nunca como ingreso perdido o prometido. Si no se proporciona, no la inventes; habla solo de volumen y tiempo.
+- Si el lead indicó "una cosa a resolver" o comentarios extra, refléjalo en el resumen ejecutivo para que se sienta escuchado.
 
 ${SERVICE_CATALOG}`;
 }
@@ -145,8 +151,16 @@ export type ReportInput = {
   answers: SelfAnswers;
   otherTexts: Record<string, string>;
   wish: string;
+  comments: string;
+  /** MXN/month pipeline exposed to slow response, or null when not computable. */
+  valueAtStakeMxn: number | null;
+  valueAtStakeLeads: number | null;
   score: ScoreResult;
 };
+
+function mxn(n: number): string {
+  return `$${n.toLocaleString("es-MX")} MXN`;
+}
 
 function answersBlock(input: ReportInput): string {
   const lines = SELF_QUESTIONS.map((q) => {
@@ -157,16 +171,26 @@ function answersBlock(input: ReportInput): string {
     return `- ${label}: ${val || "—"}`;
   });
   const dims = input.score.dimensions.map((d) => `- ${d.key}: ${d.value}/100`).join("\n");
+
+  // Value-at-stake: a directional figure the model must phrase conditionally.
+  const vasLine =
+    input.valueAtStakeMxn != null
+      ? `Value at stake (directional — phrase conditionally, never as promised lost revenue): with ~${input.valueAtStakeLeads} leads/month and their ticket range, slow first response exposes on the order of ${mxn(input.valueAtStakeMxn)} of pipeline per month to a faster competitor. Weave this MXN figure into the cost_callout, hedged ("could be exposing on the order of…").`
+      : `Value at stake: NOT computable (no ticket range given) — do NOT invent an MXN figure; speak only in terms of volume and time in the cost_callout.`;
+
   return [
     `Lead: ${input.fullName} — ${input.role} at ${input.company} (${input.industry})`,
     ``,
     `Answers:`,
     ...lines,
-    input.wish ? `- Stated wish: ${input.wish}` : ``,
+    input.wish ? `- Stated one thing to fix: ${input.wish}` : ``,
+    input.comments ? `- Extra comments: ${input.comments}` : ``,
     ``,
     `AI Sales Readiness Score: ${input.score.score}/100 (band: ${input.score.band})`,
     `Dimension scores (weakest first):`,
     dims,
+    ``,
+    vasLine,
   ].join("\n");
 }
 
@@ -226,16 +250,17 @@ export async function generateReportContent(
 
 export const DIM_LABELS: Record<DimensionKey, { es: string; en: string }> = {
   data_crm: { es: "Datos y CRM", en: "Data & CRM" },
-  playbook: { es: "Proceso de ventas documentado", en: "Documented sales process" },
+  documented_process: { es: "Proceso de ventas documentado", en: "Documented sales process" },
   proposals: { es: "Propuestas y cotizaciones", en: "Proposals & quotes" },
   response_speed: { es: "Velocidad de respuesta", en: "Response speed" },
   ai_maturity: { es: "Madurez en IA", en: "AI maturity" },
 };
 
 export const BAND_LABELS: Record<ScoreResult["band"], { es: string; en: string }> = {
-  explorer: { es: "Explorador", en: "Explorer" },
-  in_progress: { es: "En marcha", en: "In motion" },
-  advanced: { es: "Avanzado", en: "Advanced" },
+  manual: { es: "Manual / Punto de partida", en: "Manual / Starting point" },
+  in_motion: { es: "En marcha", en: "In motion" },
+  building: { es: "Tomando impulso", en: "Building momentum" },
+  ai_ready: { es: "Listo para IA", en: "AI-ready" },
 };
 
 /** Bar color by value — matches the sample: <40 red, 40-64 gold, else green. */

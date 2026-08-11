@@ -32,7 +32,7 @@ const LINE = "#E2E6EA";
 
 const CANONICAL: DimensionKey[] = [
   "data_crm",
-  "playbook",
+  "documented_process",
   "proposals",
   "response_speed",
   "ai_maturity",

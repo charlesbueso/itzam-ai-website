@@ -40,17 +40,18 @@ export type Dictionary = {
     meta: { title: string; description: string };
     hero: { eyebrow: string; heading1: string; heading2: string; sub: string; meta: string };
     progress: string;
-    sections: { company: string; tools: string; process: string };
+    sections: { company: string; scale: string; tools: string; process: string; ai: string };
     otherPlaceholder: string;
     optional: string;
     wish: { label: string; placeholder: string };
+    comments: { label: string; placeholder: string };
     contactBlock: { heading: string; sub: string; fields: { name: string; role: string; company: string; email: string; phone: string }; hint: string };
     submit: string; submitting: string;
     errors: { missing: string; rateLimited: string; generic: string };
     score: {
       pill: string; heading: string; scoreLabel: string;
-      bands: { explorer: { label: string; desc: string }; in_progress: { label: string; desc: string }; advanced: { label: string; desc: string } };
-      dims: { data_crm: string; playbook: string; proposals: string; response_speed: string; ai_maturity: string };
+      bands: { manual: { label: string; desc: string }; in_motion: { label: string; desc: string }; building: { label: string; desc: string }; ai_ready: { label: string; desc: string } };
+      dims: { data_crm: string; documented_process: string; proposals: string; response_speed: string; ai_maturity: string };
       dimsHeading: string;
     };
     next: {
@@ -239,12 +240,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
         meta: "Free · No commitment · Instant score + personalized report",
       },
       progress: "{n} of {total} answered",
-      sections: { company: "Your company", tools: "Tools & leads", process: "Process & bottlenecks" },
+      sections: { company: "Your company", scale: "Scale & value", tools: "Tools & leads", process: "Process & bottlenecks", ai: "AI & priority" },
       otherPlaceholder: "Which one?",
       optional: "Optional",
       wish: {
         label: "If you could fix ONE thing in your sales operation, what would it be?",
         placeholder: "E.g. stop my reps from wasting hours on quotes…",
+      },
+      comments: {
+        label: "Anything else you'd like to add?",
+        placeholder: "Any extra context or a message for our team…",
       },
       contactBlock: {
         heading: "Where do we send your diagnostic?",
@@ -264,13 +269,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
         heading: "Your AI Sales Readiness Score",
         scoreLabel: "out of 100",
         bands: {
-          explorer: { label: "Explorer", desc: "You're getting started. There are big, high-impact opportunities ready to capture — the challenge is knowing which to attack first." },
-          in_progress: { label: "In motion", desc: "You have foundations. With the right processes automated, you can make a real jump in commercial productivity this quarter." },
-          advanced: { label: "Advanced", desc: "You're ahead of the pack. Here AI is about sharpening and scaling what already works — and not losing your edge." },
+          manual: { label: "Manual / Starting point", desc: "Almost everything still depends on human effort. There are big, high-impact opportunities ready to capture — the challenge is knowing which to attack first." },
+          in_motion: { label: "In motion", desc: "You have foundations, but they don't yet run together. With the right processes automated, you can make a real jump in commercial productivity this quarter." },
+          building: { label: "Building momentum", desc: "Several pieces are working. Here AI is about connecting and scaling what already runs — and closing the gaps that still slow you down." },
+          ai_ready: { label: "AI-ready", desc: "You're ahead of the pack and ready to scale with AI. The focus now is sharpening what works and not losing your edge to faster competitors." },
         },
         dims: {
           data_crm: "Data & CRM",
-          playbook: "Documented sales process",
+          documented_process: "Documented sales process",
           proposals: "Proposals & quotes",
           response_speed: "Response speed",
           ai_maturity: "AI maturity",
@@ -484,12 +490,16 @@ export const dictionaries: Record<Locale, Dictionary> = {
         meta: "Gratis · Sin compromiso · Score al instante + reporte personalizado",
       },
       progress: "{n} de {total} respondidas",
-      sections: { company: "Tu empresa", tools: "Herramientas y leads", process: "Proceso y cuellos de botella" },
+      sections: { company: "Tu empresa", scale: "Escala y valor", tools: "Herramientas y leads", process: "Proceso y cuellos de botella", ai: "IA y prioridad" },
       otherPlaceholder: "¿Cuál?",
       optional: "Opcional",
       wish: {
         label: "Si pudieras resolver UNA cosa en tu operación de ventas, ¿cuál sería?",
         placeholder: "Ej: que mis vendedores dejen de perder horas en cotizaciones…",
+      },
+      comments: {
+        label: "¿Algo más que quieras agregar?",
+        placeholder: "Cualquier contexto extra o un mensaje para nuestro equipo…",
       },
       contactBlock: {
         heading: "¿A dónde te enviamos tu diagnóstico?",
@@ -509,13 +519,14 @@ export const dictionaries: Record<Locale, Dictionary> = {
         heading: "Tu AI Sales Readiness Score",
         scoreLabel: "de 100",
         bands: {
-          explorer: { label: "Explorador", desc: "Estás empezando. Hay oportunidades grandes y de alto impacto listas para capturar — el reto es saber cuál atacar primero." },
-          in_progress: { label: "En marcha", desc: "Ya tienes bases. Con los procesos correctos automatizados, puedes dar un salto importante en productividad comercial este trimestre." },
-          advanced: { label: "Avanzado", desc: "Vas adelante del promedio. Aquí la IA sirve para afinar y escalar lo que ya funciona — y no perder ventaja." },
+          manual: { label: "Manual / Punto de partida", desc: "Casi todo depende del esfuerzo humano. Hay oportunidades grandes y de alto impacto listas para capturar — el reto es saber cuál atacar primero." },
+          in_motion: { label: "En marcha", desc: "Ya tienes bases, pero aún no operan juntas. Con los procesos correctos automatizados, puedes dar un salto importante en productividad comercial este trimestre." },
+          building: { label: "Tomando impulso", desc: "Varias piezas ya funcionan. Aquí la IA sirve para conectar y escalar lo que ya corre — y cerrar las brechas que todavía te frenan." },
+          ai_ready: { label: "Listo para IA", desc: "Vas adelante del promedio y listo para escalar con IA. El foco ahora es afinar lo que funciona y no perder ventaja frente a competidores más rápidos." },
         },
         dims: {
           data_crm: "Datos y CRM",
-          playbook: "Proceso de ventas documentado",
+          documented_process: "Proceso de ventas documentado",
           proposals: "Propuestas y cotizaciones",
           response_speed: "Velocidad de respuesta",
           ai_maturity: "Madurez en IA",

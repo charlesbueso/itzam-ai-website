@@ -21,14 +21,15 @@ import type { ScoreResult } from "./scoring";
  */
 
 const BAND_ES: Record<ScoreResult["band"], string> = {
-  explorer: "Explorador",
-  in_progress: "En marcha",
-  advanced: "Avanzado",
+  manual: "Manual / Punto de partida",
+  in_motion: "En marcha",
+  building: "Tomando impulso",
+  ai_ready: "Listo para IA",
 };
 
 const DIM_ES: Record<string, string> = {
   data_crm: "Datos y CRM",
-  playbook: "Proceso documentado",
+  documented_process: "Proceso documentado",
   proposals: "Propuestas",
   response_speed: "Velocidad de respuesta",
   ai_maturity: "Madurez en IA",
@@ -40,6 +41,9 @@ export type AssessmentSheetInput = {
   answers: SelfAnswers;
   otherTexts: Record<string, string>;
   wish: string;
+  comments: string;
+  /** MXN/month value at stake, or null when not computed. */
+  valueAtStakeMxn: number | null;
   score: ScoreResult;
   ip: string | null;
   userAgent: string | null;
@@ -82,8 +86,14 @@ export function buildSheetRow(input: AssessmentSheetInput): {
     values.push(val);
   }
 
-  headers.push("Deseo (una cosa a resolver)");
+  headers.push("Una cosa a resolver");
   values.push(input.wish || "");
+
+  headers.push("Comentarios");
+  values.push(input.comments || "");
+
+  headers.push("Valor en riesgo (MXN/mes)");
+  values.push(input.valueAtStakeMxn != null ? String(input.valueAtStakeMxn) : "");
 
   headers.push("Dimensiones");
   values.push(

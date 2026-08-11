@@ -26,7 +26,8 @@ export async function GET() {
     const saved = await saveReportToDrive({
       company: "Drive Test Co",
       filename: `Drive Test Co (Connectivity Check) - ${new Date().toISOString().slice(0, 10)} - Free AI Assessment.pdf`,
-      pdf,
+      data: pdf,
+      mime: "application/pdf",
     });
     return NextResponse.json({ ok: true, drive_url: saved.url, file_id: saved.id });
   } catch (e) {
