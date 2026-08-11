@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { waitUntil } from "@vercel/functions";
 import { z } from "zod";
 import { SELF_QUESTIONS, type SelfAnswers } from "@/lib/assessment/questions";
-import { computeScore } from "@/lib/assessment/scoring";
+import { computeScore, computeValueAtStake } from "@/lib/assessment/scoring";
 import { sendToSheet } from "@/lib/assessment/sheet";
 import { generateAndNotifyReport } from "@/lib/assessment/pipeline";
 import { upsertContact, createNoteForContact, nameFrom } from "@/lib/hubspot/client";
@@ -41,6 +41,7 @@ const BodySchema = z.object({
   answers: z.record(z.string(), AnswerValue),
   otherTexts: z.record(z.string(), z.string().max(200)).default({}),
   wish: z.string().max(600).default(""),
+  comments: z.string().max(1500).default(""),
   contact: z.object({
     name: z.string().min(2).max(120),
     role: z.string().min(2).max(120),
@@ -87,7 +88,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "invalid_answers", question: missing }, { status: 400 });
   }
 
-  const score = computeScore(parsed.answers as SelfAnswers);
+  const answers = parsed.answers as SelfAnswers;
+  const score = computeScore(answers);
+  const valueAtStake = computeValueAtStake(answers);
 
   const contact = {
     name: parsed.contact.name.trim(),
@@ -107,9 +110,11 @@ export async function POST(req: Request) {
     await sendToSheet({
       locale: parsed.locale,
       contact,
-      answers: parsed.answers as SelfAnswers,
+      answers,
       otherTexts: parsed.otherTexts,
       wish: parsed.wish.trim(),
+      comments: parsed.comments.trim(),
+      valueAtStakeMxn: valueAtStake.mxnPerMonth,
       score,
       ip,
       userAgent,
@@ -163,7 +168,11 @@ export async function POST(req: Request) {
         });
         const noteBody = [
           `<p><strong>Free AI Assessment completed</strong> — score ${score.score}/100 (${score.band})</p>`,
-          parsed.wish ? `<p><strong>Wish:</strong> ${htmlEscape(parsed.wish)}</p>` : "",
+          valueAtStake.mxnPerMonth != null
+            ? `<p><strong>Value at stake:</strong> ~$${valueAtStake.mxnPerMonth.toLocaleString("es-MX")} MXN/mo pipeline (directional)</p>`
+            : "",
+          parsed.wish ? `<p><strong>One thing to fix:</strong> ${htmlEscape(parsed.wish)}</p>` : "",
+          parsed.comments ? `<p><strong>Comments:</strong> ${htmlEscape(parsed.comments)}</p>` : "",
           `<p>${answerRows.join("<br/><br/>")}</p>`,
         ].join("");
         const note = await createNoteForContact({ contactId: hs.id, body: noteBody });
@@ -193,13 +202,14 @@ export async function POST(req: Request) {
       }
 
       // Gated report pipeline — sends the team notification itself (with the
-      // generated PDF, or the reason it was skipped/flagged).
+      // generated PDF + DOCX, or the reason it was skipped/flagged).
       await generateAndNotifyReport({
         locale: parsed.locale,
         contact,
-        answers: parsed.answers as SelfAnswers,
+        answers,
         otherTexts: parsed.otherTexts,
         wish: parsed.wish.trim(),
+        comments: parsed.comments.trim(),
         score,
         ip,
       });

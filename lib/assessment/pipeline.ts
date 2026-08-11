@@ -1,19 +1,23 @@
 import "server-only";
 
 import { SELF_QUESTIONS, answerLabel, type SelfAnswers } from "./questions";
-import type { ScoreResult } from "./scoring";
+import { computeValueAtStake, type ScoreResult } from "./scoring";
 import { isCompanyEmail } from "./emailDomains";
 import {
   isReportEnabled,
   legitCheck,
   generateReportContent,
+  BAND_LABELS,
   type ReportInput,
 } from "./report";
 import { renderReportPdf } from "./pdf";
+import { renderReportDocx } from "./docx";
 import { saveReportToDrive } from "./drive";
 import { checkRateLimit } from "@/lib/security/rateLimit";
 import { getResend, RESEND_FROM, safeHeader } from "@/lib/email/resend";
 import { assessmentTeamEmail, type ReportStatus } from "@/lib/email/templates";
+
+const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
 /**
  * Gated report pipeline for the Free AI Assessment. Runs after the fast submit
@@ -33,6 +37,7 @@ export type PipelineInput = {
   answers: SelfAnswers;
   otherTexts: Record<string, string>;
   wish: string;
+  comments: string;
   score: ScoreResult;
   ip: string | null;
 };
@@ -76,12 +81,12 @@ export async function generateAndNotifyReport(input: PipelineInput): Promise<voi
   const resend = getResend();
   const notifyTo = process.env.INTERNAL_NOTIFY_EMAIL;
 
-  const bottleneck = labelFor("bottleneck_1", "es", input.answers, input.otherTexts);
-  const bandLabelEs = { explorer: "Explorador", in_progress: "En marcha", advanced: "Avanzado" }[input.score.band];
+  const bottleneck = labelFor("q9_bottleneck_1", "es", input.answers, input.otherTexts);
+  const bandLabelEs = BAND_LABELS[input.score.band].es;
 
   async function notify(
     status: ReportStatus,
-    extra?: { pdf?: Buffer; driveUrl?: string; legitReason?: string }
+    extra?: { pdf?: Buffer; docx?: Buffer; fileBase?: string; driveUrl?: string; legitReason?: string }
   ) {
     if (!resend || !notifyTo) return;
     const tpl = assessmentTeamEmail({
@@ -97,6 +102,11 @@ export async function generateAndNotifyReport(input: PipelineInput): Promise<voi
       driveUrl: extra?.driveUrl,
       legitReason: extra?.legitReason,
     });
+    const base = sanitizeFilename(extra?.fileBase || `Assessment - ${input.contact.company}`);
+    const attachments = [
+      ...(extra?.pdf ? [{ filename: `${base}.pdf`, content: extra.pdf }] : []),
+      ...(extra?.docx ? [{ filename: `${base}.docx`, content: extra.docx }] : []),
+    ];
     try {
       await resend.emails.send({
         from: RESEND_FROM,
@@ -105,9 +115,7 @@ export async function generateAndNotifyReport(input: PipelineInput): Promise<voi
         subject: safeHeader(tpl.subject),
         html: tpl.html,
         text: tpl.text,
-        attachments: extra?.pdf
-          ? [{ filename: `${sanitizeFilename(`Assessment - ${input.contact.company}`)}.pdf`, content: extra.pdf }]
-          : undefined,
+        attachments: attachments.length ? attachments : undefined,
       });
     } catch (e) {
       console.error("[assessment] team email failed:", e instanceof Error ? e.message : String(e));
@@ -148,7 +156,8 @@ export async function generateAndNotifyReport(input: PipelineInput): Promise<voi
     }
   }
 
-  const industry = labelFor("industry", input.locale, input.answers, input.otherTexts);
+  const industry = labelFor("q1_industry", input.locale, input.answers, input.otherTexts);
+  const vas = computeValueAtStake(input.answers);
   const reportInput: ReportInput = {
     locale: input.locale,
     firstName: input.contact.name.split(/\s+/)[0] || input.contact.name,
@@ -159,6 +168,9 @@ export async function generateAndNotifyReport(input: PipelineInput): Promise<voi
     answers: input.answers,
     otherTexts: input.otherTexts,
     wish: input.wish,
+    comments: input.comments,
+    valueAtStakeMxn: vas.mxnPerMonth,
+    valueAtStakeLeads: vas.leadsMid,
     score: input.score,
   };
 
@@ -178,38 +190,40 @@ export async function generateAndNotifyReport(input: PipelineInput): Promise<voi
   }
   if (!generated) return notify("generation_failed");
 
-  // Render the PDF.
+  // Render the PDF and the editable DOCX twin from the same content.
+  const pdfData = {
+    meta: {
+      fullName: input.contact.name,
+      role: input.contact.role,
+      company: input.contact.company,
+      industry,
+      dateStr: formatDate(input.locale),
+    },
+    locale: input.locale,
+    score: input.score,
+    content: generated.content,
+  };
   let pdf: Buffer;
   try {
-    pdf = await renderReportPdf({
-      meta: {
-        fullName: input.contact.name,
-        role: input.contact.role,
-        company: input.contact.company,
-        industry,
-        dateStr: formatDate(input.locale),
-      },
-      locale: input.locale,
-      score: input.score,
-      content: generated.content,
-    });
+    pdf = await renderReportPdf(pdfData);
   } catch (e) {
     console.error("[assessment] pdf render failed:", e instanceof Error ? e.message : String(e));
     return notify("generation_failed");
   }
-
-  // Upload to Drive (best-effort — the team email still carries the PDF if this fails).
-  // Structure: "Itzam — AI Free Assessment" / <Company> / <file>.pdf
-  let driveUrl: string | undefined;
+  let docx: Buffer | undefined;
   try {
-    const dateStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (filename-safe, sortable)
-    const saved = await saveReportToDrive({
-      company: input.contact.company,
-      filename: `${input.contact.company} (${input.contact.name}) - ${dateStr} - Free AI Assessment.pdf`,
-      pdf,
-    });
-    driveUrl = saved.url;
+    docx = await renderReportDocx(pdfData);
   } catch (e) {
+    // DOCX is a bonus — don't fail the whole report if it can't render.
+    console.error("[assessment] docx render failed:", e instanceof Error ? e.message : String(e));
+  }
+
+  // Upload both to Drive (best-effort). Structure:
+  //   "Itzam — AI Free Assessment" / <Company> / <file>.{pdf,docx}
+  const dateStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (sortable)
+  const fileBase = `${input.contact.company} (${input.contact.name}) - ${dateStr} - Free AI Assessment`;
+  let driveUrl: string | undefined;
+  const logDriveErr = (e: unknown) => {
     const msg = e instanceof Error ? e.message : String(e);
     const cause = (e as { cause?: { code?: string; message?: string } })?.cause;
     console.error(
@@ -217,7 +231,31 @@ export async function generateAndNotifyReport(input: PipelineInput): Promise<voi
       msg,
       cause ? `| cause: ${cause.code || cause.message || JSON.stringify(cause)}` : ""
     );
+  };
+  try {
+    const saved = await saveReportToDrive({
+      company: input.contact.company,
+      filename: `${fileBase}.pdf`,
+      data: pdf,
+      mime: "application/pdf",
+    });
+    driveUrl = saved.folderUrl || saved.url;
+  } catch (e) {
+    logDriveErr(e);
+  }
+  if (docx) {
+    try {
+      const savedDocx = await saveReportToDrive({
+        company: input.contact.company,
+        filename: `${fileBase}.docx`,
+        data: docx,
+        mime: DOCX_MIME,
+      });
+      driveUrl = driveUrl || savedDocx.folderUrl || savedDocx.url;
+    } catch (e) {
+      logDriveErr(e);
+    }
   }
 
-  await notify("generated", { pdf, driveUrl });
+  await notify("generated", { pdf, docx, fileBase, driveUrl });
 }

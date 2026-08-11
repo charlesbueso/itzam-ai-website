@@ -22,12 +22,13 @@ type SubmitResult = {
 
 type Phase = "form" | "submitting" | "score";
 
-const SECTION_ORDER: SelfQuestion["section"][] = ["company", "tools", "process"];
+const SECTION_ORDER: SelfQuestion["section"][] = ["company", "scale", "tools", "process", "ai"];
 
 const BAND_COLORS: Record<Band, string> = {
-  explorer: "#ef6a4d",
-  in_progress: "#c9a040",
-  advanced: "#4dbd74",
+  manual: "#ef6a4d",
+  in_motion: "#c9a040",
+  building: "#5aa9d6",
+  ai_ready: "#4dbd74",
 };
 
 export default function AssessmentFlow() {
@@ -38,6 +39,7 @@ export default function AssessmentFlow() {
   const [answers, setAnswers] = useState<Answers>({});
   const [otherTexts, setOtherTexts] = useState<Record<string, string>>({});
   const [wish, setWish] = useState("");
+  const [comments, setComments] = useState("");
   const [contact, setContact] = useState({ name: "", role: "", company: "", email: "", phone: "" });
   const [accepted, setAccepted] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -114,6 +116,7 @@ export default function AssessmentFlow() {
           answers,
           otherTexts,
           wish,
+          comments,
           contact: {
             name: contact.name.trim(),
             role: contact.role.trim(),
@@ -150,6 +153,7 @@ export default function AssessmentFlow() {
           answers={answers}
           otherTexts={otherTexts}
           wish={wish}
+          comments={comments}
           contact={contact}
           accepted={accepted}
           errorMsg={errorMsg}
@@ -161,6 +165,7 @@ export default function AssessmentFlow() {
           isSelected={isSelected}
           onOtherText={(key, v) => setOtherTexts((p) => ({ ...p, [key]: v }))}
           onWish={setWish}
+          onComments={setComments}
           onContact={(field, v) => setContact((p) => ({ ...p, [field]: v }))}
           onAccept={setAccepted}
           onSubmit={handleSubmit}
@@ -184,6 +189,7 @@ function FormView(props: {
   answers: Answers;
   otherTexts: Record<string, string>;
   wish: string;
+  comments: string;
   contact: { name: string; role: string; company: string; email: string; phone: string };
   accepted: boolean;
   errorMsg: string | null;
@@ -195,6 +201,7 @@ function FormView(props: {
   isSelected: (q: SelfQuestion, value: string) => boolean;
   onOtherText: (key: string, value: string) => void;
   onWish: (v: string) => void;
+  onComments: (v: string) => void;
   onContact: (field: "name" | "role" | "company" | "email" | "phone", v: string) => void;
   onAccept: (v: boolean) => void;
   onSubmit: () => void;
@@ -230,6 +237,7 @@ function FormView(props: {
               qNumber += 1;
               const label = locale === "en" ? q.label_en : q.label_es;
               const hint = locale === "en" ? q.hint_en : q.hint_es;
+              const helper = locale === "en" ? q.helper_en : q.helper_es;
               const showOther =
                 q.otherValue != null && props.isSelected(q, q.otherValue);
               return (
@@ -247,6 +255,7 @@ function FormView(props: {
                       <span className="text-sm font-normal text-white/45">({hint})</span>
                     )}
                   </p>
+                  {helper && <p className="mt-1 text-sm text-white/45">{helper}</p>}
                   <div className="mt-4 flex flex-wrap gap-2">
                     {q.options.map((o) => {
                       const selected = props.isSelected(q, o.value);
@@ -284,26 +293,41 @@ function FormView(props: {
                 </fieldset>
               );
             })}
-
-            {section === "process" && (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 md:p-6">
-                <p className="text-base font-semibold text-white md:text-lg">
-                  {a.wish.label}{" "}
-                  <span className="text-sm font-normal text-white/45">({a.optional})</span>
-                </p>
-                <input
-                  type="text"
-                  value={props.wish}
-                  onChange={(e) => props.onWish(e.target.value)}
-                  placeholder={a.wish.placeholder}
-                  maxLength={600}
-                  className="mt-4 w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-base text-white placeholder-white/30 outline-none transition focus:border-[#c9a040] focus:bg-white/10"
-                />
-              </div>
-            )}
           </div>
         </section>
       ))}
+
+      {/* Open-text: one thing to fix + extra comments */}
+      <section className="mt-10 space-y-4">
+        <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 md:p-6">
+          <p className="text-base font-semibold text-white md:text-lg">
+            {a.wish.label}{" "}
+            <span className="text-sm font-normal text-white/45">({a.optional})</span>
+          </p>
+          <input
+            type="text"
+            value={props.wish}
+            onChange={(e) => props.onWish(e.target.value)}
+            placeholder={a.wish.placeholder}
+            maxLength={600}
+            className="mt-4 w-full rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-base text-white placeholder-white/30 outline-none transition focus:border-[#c9a040] focus:bg-white/10"
+          />
+        </div>
+        <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 md:p-6">
+          <p className="text-base font-semibold text-white md:text-lg">
+            {a.comments.label}{" "}
+            <span className="text-sm font-normal text-white/45">({a.optional})</span>
+          </p>
+          <textarea
+            value={props.comments}
+            onChange={(e) => props.onComments(e.target.value)}
+            placeholder={a.comments.placeholder}
+            rows={3}
+            maxLength={1500}
+            className="mt-4 w-full resize-none rounded-lg border border-white/15 bg-white/5 px-4 py-3 text-base text-white placeholder-white/30 outline-none transition focus:border-[#c9a040] focus:bg-white/10"
+          />
+        </div>
+      </section>
 
       {/* Contact block */}
       <section className="mt-10 rounded-2xl border border-[#c9a040]/50 bg-[#c9a040]/[0.04] p-5 md:p-6">

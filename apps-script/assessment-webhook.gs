@@ -6,11 +6,11 @@
  *       Appends one row per /assessment submission. Row 1 is written with
  *       `headers` the first time the sheet is empty.
  *   • Save report:         { secret?, action: "save_report", filename,
- *                            company, pdf_base64, folder? }
- *       Saves the generated PDF into <parent>/<company>/, where <parent> is the
- *       REPORT_FOLDER_ID script property, or the named folder (default
- *       "Itzam — AI Free Assessment"). One subfolder per company. Returns the
- *       file URL and the company folder URL.
+ *                            company, file_base64, mime?, folder? }
+ *       Saves a file (PDF or DOCX) into <parent>/<company>/, where <parent> is
+ *       the REPORT_FOLDER_ID script property, or the named folder (default
+ *       "Itzam — AI Free Assessment"). One subfolder per company. `mime`
+ *       defaults to application/pdf. Returns the file URL and folder URL.
  *
  * SETUP (once):
  *   1. Create a Google Sheet in the contact@itzam.ai Drive
@@ -96,10 +96,10 @@ function authorizeDrive() {
 }
 
 function saveReport_(props, body) {
-  var b64 = String(body.pdf_base64 || '');
-  if (!b64) return jsonOut_({ ok: false, error: 'no_pdf' });
-  var filename = sanitizeName_(body.filename || 'Assessment');
-  if (filename.slice(-4).toLowerCase() !== '.pdf') filename += '.pdf';
+  var b64 = String(body.file_base64 || body.pdf_base64 || '');
+  if (!b64) return jsonOut_({ ok: false, error: 'no_file' });
+  var filename = sanitizeName_(body.filename || 'Assessment.pdf');
+  var mime = String(body.mime || 'application/pdf');
   var company = sanitizeName_(body.company || 'Sin empresa');
 
   // Parent report folder: REPORT_FOLDER_ID if pinned, else the named folder.
@@ -117,7 +117,7 @@ function saveReport_(props, body) {
   var sit = parent.getFoldersByName(company);
   var clientFolder = sit.hasNext() ? sit.next() : parent.createFolder(company);
 
-  var blob = Utilities.newBlob(Utilities.base64Decode(b64), 'application/pdf', filename);
+  var blob = Utilities.newBlob(Utilities.base64Decode(b64), mime, filename);
   var file = clientFolder.createFile(blob);
   return jsonOut_({
     ok: true,

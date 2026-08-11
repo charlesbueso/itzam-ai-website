@@ -14,12 +14,14 @@ import "server-only";
 
 const DRIVE_FOLDER = "Itzam — AI Free Assessment";
 
-export type DriveSaveResult = { url: string; id: string };
+export type DriveSaveResult = { url: string; id: string; folderUrl?: string };
 
+/** Save a file (PDF or DOCX) into <DRIVE_FOLDER>/<company>/ via the webhook. */
 export async function saveReportToDrive(opts: {
   company: string;
   filename: string;
-  pdf: Buffer;
+  data: Buffer;
+  mime: string;
 }): Promise<DriveSaveResult> {
   const url = process.env.GOOGLE_SHEETS_ASSESSMENT_WEBHOOK_URL;
   if (!url) throw new Error("drive_webhook_not_configured");
@@ -31,7 +33,8 @@ export async function saveReportToDrive(opts: {
     filename: opts.filename,
     company: opts.company, // one subfolder per company inside DRIVE_FOLDER
     folder: DRIVE_FOLDER,
-    pdf_base64: opts.pdf.toString("base64"),
+    mime: opts.mime,
+    file_base64: opts.data.toString("base64"),
   });
 
   // Retry transient connection failures (the route to Google occasionally
@@ -54,10 +57,10 @@ export async function saveReportToDrive(opts: {
   if (!res) throw new Error("drive_save_no_response");
 
   const body = (await res.json().catch(() => null)) as
-    | { ok?: boolean; error?: string; file_url?: string; file_id?: string }
+    | { ok?: boolean; error?: string; file_url?: string; file_id?: string; folder_url?: string }
     | null;
   if (!res.ok || !body || body.ok === false || !body.file_url) {
     throw new Error(`drive_save_${res.status}: ${body?.error ?? "unknown"}`);
   }
-  return { url: body.file_url, id: body.file_id || "" };
+  return { url: body.file_url, id: body.file_id || "", folderUrl: body.folder_url };
 }
