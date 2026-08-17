@@ -6,6 +6,7 @@ import {
   Page,
   View,
   Text,
+  Image,
   Link,
   StyleSheet,
   renderToBuffer,
@@ -13,12 +14,16 @@ import {
 import type { ReportContent } from "./report";
 import { DIM_LABELS, BAND_LABELS, dimensionColor } from "./report";
 import type { ScoreResult, DimensionKey } from "./scoring";
+import { LOGOTYPE_DARK_PNG, LOGOTYPE_LIGHT_PNG, LOGOTYPE_RATIO } from "./logo";
 
 /**
- * Fixed 6-page "AI Free Assessment" report template, matching
+ * Fixed 6-page "AI Sales Readiness Assessment" report template, matching
  * Itzam_MiniAssessment_Reporte_EJEMPLO.pdf. The layout is entirely in code —
  * Claude only supplies the prose in `content` — so the format costs no tokens.
  */
+
+/** Banner headline at the top of every page (cover eyebrow + page bands). */
+const DOC_LABEL = "AI SALES READINESS ASSESSMENT";
 
 const NAVY = "#0D1B2A";
 const NAVY2 = "#12283F";
@@ -29,6 +34,14 @@ const INK = "#1B2733";
 const BODY = "#45535F";
 const MUTED = "#8A94A0";
 const LINE = "#E2E6EA";
+
+/** A4 height in pt, and the rendered height of the footer rule + its line. */
+const PAGE_H = 841.89;
+const FOOTER_H = 21;
+
+/** Logotype widths in pt (height follows the artwork's aspect ratio). */
+const LOGO_COVER_W = 172;
+const LOGO_BAND_W = 92;
 
 const CANONICAL: DimensionKey[] = [
   "data_crm",
@@ -49,16 +62,13 @@ const s = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
   },
-  bandEyebrow: { color: "#9FB0C0", fontSize: 8, letterSpacing: 2 },
+  bandEyebrow: { color: "#9FB0C0", fontSize: 8, letterSpacing: 1.6 },
   content: { paddingHorizontal: 48, paddingTop: 22, paddingBottom: 54 },
-  logoRow: { flexDirection: "row", alignItems: "center", gap: 7 },
-  logoBars: { width: 20, justifyContent: "center", gap: 2.5 },
-  logoBar: { height: 2.5, backgroundColor: GOLD, borderRadius: 2 },
-  logoText: { fontFamily: "Helvetica-Bold", fontSize: 15, color: "#FFFFFF" },
-  logoTextSm: { fontFamily: "Helvetica-Bold", fontSize: 11, color: "#FFFFFF" },
+  logo: { width: LOGO_COVER_W, height: LOGO_COVER_W * LOGOTYPE_RATIO },
+  logoSm: { width: LOGO_BAND_W, height: LOGO_BAND_W * LOGOTYPE_RATIO },
 
   h1: { fontFamily: "Helvetica-Bold", fontSize: 22, color: INK, marginBottom: 4 },
-  rule: { width: 46, height: 3, backgroundColor: GOLD, borderRadius: 2, marginBottom: 12, marginTop: 5 },
+  rule: { width: 46, height: 3, backgroundColor: GOLD, borderRadius: 2, marginBottom: 12, marginTop: 14 },
   p: { color: BODY, marginBottom: 7 },
   bold: { fontFamily: "Helvetica-Bold", color: INK },
 
@@ -111,40 +121,49 @@ const s = StyleSheet.create({
   ctaBox: { backgroundColor: NAVY, borderRadius: 12, padding: 26 },
   ctaTitle: { color: GOLD, fontFamily: "Helvetica-Bold", fontSize: 15, marginBottom: 8 },
   ctaBody: { color: "#C3D0DB", fontSize: 10, lineHeight: 1.5, marginBottom: 12 },
-  ctaPrice: { color: "#FFFFFF", fontFamily: "Helvetica-Bold", fontSize: 22 },
+  ctaPrice: { color: "#FFFFFF", fontFamily: "Helvetica-Bold", fontSize: 22, lineHeight: 1.35, marginBottom: 2 },
   ctaBtn: { backgroundColor: GOLD, color: NAVY, alignSelf: "flex-start", paddingVertical: 9, paddingHorizontal: 16, borderRadius: 6, fontFamily: "Helvetica-Bold", fontSize: 10, marginTop: 14, textDecoration: "none" },
 
-  footer: { position: "absolute", bottom: 24, left: 48, right: 48, flexDirection: "row", justifyContent: "space-between", borderTopWidth: 1, borderTopColor: LINE, paddingTop: 8 },
+  // Anchored from the top: an absolute box with only `bottom` set gets
+  // stretched to the full page height by Yoga, which would drop the footer at
+  // the top of the page, behind the band.
+  footer: {
+    position: "absolute",
+    top: PAGE_H - 24 - FOOTER_H,
+    left: 48,
+    right: 48,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    borderTopWidth: 1,
+    borderTopColor: LINE,
+    paddingTop: 8,
+  },
   footerText: { color: MUTED, fontSize: 8 },
 });
 
+/** Brand logotype — the stepped pyramid + wordmark, light version for navy. */
 function Logo({ small }: { small?: boolean }) {
-  return (
-    <View style={s.logoRow}>
-      <View style={s.logoBars}>
-        <View style={[s.logoBar, { width: small ? 14 : 20 }]} />
-        <View style={[s.logoBar, { width: small ? 14 : 20 }]} />
-        <View style={[s.logoBar, { width: small ? 14 : 20 }]} />
-      </View>
-      <Text style={small ? s.logoTextSm : s.logoText}>itzam.ai</Text>
-    </View>
-  );
+  return <Image src={LOGOTYPE_DARK_PNG} style={small ? s.logoSm : s.logo} />;
 }
 
 function Band({ company }: { company: string }) {
   return (
     <View style={s.band}>
       <Logo small />
-      <Text style={s.bandEyebrow}>AI FREE ASSESSMENT · {company.toUpperCase()}</Text>
+      <Text style={s.bandEyebrow}>{DOC_LABEL} · {company.toUpperCase()}</Text>
     </View>
   );
 }
 
-function Footer() {
+function Footer({ locale }: { locale: "es" | "en" }) {
+  const en = locale === "en";
   return (
     <View style={s.footer} fixed>
-      <Text style={s.footerText}>Itzam.AI — AI Free Assessment</Text>
-      <Text style={s.footerText} render={({ pageNumber }) => `Página ${pageNumber}`} />
+      <Text style={s.footerText}>Itzam.AI — AI Sales Readiness Assessment</Text>
+      <Text
+        style={s.footerText}
+        render={({ pageNumber }) => (en ? `Page ${pageNumber}` : `Página ${pageNumber}`)}
+      />
     </View>
   );
 }
@@ -165,14 +184,14 @@ function ReportDoc({ meta, locale, score, content }: ReportPdfData) {
     subtitleFallback: en
       ? "Where AI can generate the greatest impact in your commercial operation"
       : "Dónde la inteligencia artificial puede generar el mayor impacto en tu operación comercial",
-    coverTitle: en ? "Your AI diagnostic\nfor sales" : "Tu diagnóstico de\nIA para ventas",
+    coverTitle: en ? "Your Sales AI\nDiagnostic" : "Tu diagnóstico de\nIA para ventas",
     preparedFor: en ? "Prepared for" : "Preparado para",
     company: en ? "Company" : "Empresa",
     date: en ? "Date" : "Fecha",
     preparedBy: en ? "Prepared by" : "Preparado por",
     disclaimer: en
-      ? "Automatically generated from your AI Free Assessment and reviewed by the Itzam.AI team. It is an orientation diagnostic; the full AI Opportunity Assessment goes deeper on each point."
-      : "Documento generado automáticamente a partir de tu AI Free Assessment y revisado por el equipo de Itzam.AI. Es un diagnóstico orientativo; el AI Opportunity Assessment completo profundiza en cada punto.",
+      ? "Automatically generated from your AI Sales Readiness Assessment and reviewed by the Itzam.AI team. It is an orientation diagnostic; the full AI Opportunity Assessment goes deeper on each point."
+      : "Documento generado automáticamente a partir de tu AI Sales Readiness Assessment y revisado por el equipo de Itzam.AI. Es un diagnóstico orientativo; el AI Opportunity Assessment completo profundiza en cada punto.",
     execSummary: en ? "Executive summary" : "Resumen ejecutivo",
     scoreLabel: "AI SALES READINESS SCORE",
     nivel: en ? "Level" : "Nivel",
@@ -202,7 +221,7 @@ function ReportDoc({ meta, locale, score, content }: ReportPdfData) {
     nextStepBody: en
       ? "Two weeks. A real diagnostic of your processes. An actionable plan with the 3–5 highest-impact opportunities — prioritized, with the route to implement them. No consultants installed, no endless projects."
       : "Dos semanas. Un diagnóstico real de tus procesos. Un plan accionable con las 3–5 oportunidades de mayor impacto — priorizadas y con la ruta de cómo implementarlas. Sin consultores instalados, sin proyectos interminables.",
-    price: "desde $8,000 MXN",
+    price: en ? "from $8,000 MXN" : "desde $8,000 MXN",
     priceNote: en ? " · limited-time offer" : " · oferta por tiempo limitado",
     payNote: en
       ? "50% upfront, 50% on delivery. If you decide not to continue, the diagnostic is yours."
@@ -253,13 +272,13 @@ function ReportDoc({ meta, locale, score, content }: ReportPdfData) {
   const strategic = content.strategic_projects.slice(0, 3);
 
   return (
-    <Document title={`AI Free Assessment — ${meta.company}`} author="Itzam.AI">
+    <Document title={`AI Sales Readiness Assessment — ${meta.company}`} author="Itzam.AI">
       {/* ── Page 1 · Cover ── */}
       <Page size="A4" style={s.page}>
         <View style={s.cover}>
           <Logo />
-          <View style={{ marginTop: 90 }}>
-            <Text style={s.eyebrow}>AI FREE ASSESSMENT</Text>
+          <View style={{ marginTop: 84 }}>
+            <Text style={s.eyebrow}>{DOC_LABEL}</Text>
             <Text style={s.coverTitle}>{T.coverTitle}</Text>
             <Text style={s.coverSub}>{content.subtitle || T.subtitleFallback}</Text>
           </View>
@@ -314,7 +333,7 @@ function ReportDoc({ meta, locale, score, content }: ReportPdfData) {
             </View>
           ))}
         </View>
-        <Footer />
+        <Footer locale={locale} />
       </Page>
 
       {/* ── Page 3 · Diagnosis by area ── */}
@@ -346,7 +365,7 @@ function ReportDoc({ meta, locale, score, content }: ReportPdfData) {
             );
           })}
         </View>
-        <Footer />
+        <Footer locale={locale} />
       </Page>
 
       {/* ── Page 4 · Opportunities ── */}
@@ -372,7 +391,7 @@ function ReportDoc({ meta, locale, score, content }: ReportPdfData) {
             </View>
           ))}
         </View>
-        <Footer />
+        <Footer locale={locale} />
       </Page>
 
       {/* ── Page 5 · Free vs Full (static) ── */}
@@ -408,7 +427,7 @@ function ReportDoc({ meta, locale, score, content }: ReportPdfData) {
             </View>
           ))}
         </View>
-        <Footer />
+        <Footer locale={locale} />
       </Page>
 
       {/* ── Page 6 · Starting plan + CTA ── */}
@@ -451,7 +470,7 @@ function ReportDoc({ meta, locale, score, content }: ReportPdfData) {
 
           <Text style={{ color: MUTED, fontSize: 9.5, marginTop: 16 }}>{T.contactLine}</Text>
         </View>
-        <Footer />
+        <Footer locale={locale} />
       </Page>
     </Document>
   );
@@ -476,7 +495,8 @@ export async function renderTestPdf(): Promise<Buffer> {
     <Document title="Drive connectivity test" author="Itzam.AI">
       <Page size="A4" style={s.page}>
         <View style={{ padding: 54 }}>
-          <Logo />
+          {/* White page — needs the dark wordmark, not the cover's light one. */}
+          <Image src={LOGOTYPE_LIGHT_PNG} style={s.logo} />
           <Text style={[s.h1, { marginTop: 40 }]}>Drive connectivity test</Text>
           <View style={s.rule} />
           <Text style={s.p}>

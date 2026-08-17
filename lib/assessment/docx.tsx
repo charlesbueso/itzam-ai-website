@@ -5,6 +5,8 @@ import {
   Packer,
   Paragraph,
   TextRun,
+  ImageRun,
+  Header,
   HeadingLevel,
   Table,
   TableRow,
@@ -16,6 +18,7 @@ import {
 import { DIM_LABELS, BAND_LABELS } from "./report";
 import type { ReportPdfData } from "./pdf";
 import type { DimensionKey } from "./scoring";
+import { LOGOTYPE_LIGHT_PNG, LOGOTYPE_LIGHT_SIZE } from "./logo";
 
 /**
  * Editable DOCX twin of the report PDF — same content, Word format, so the team
@@ -63,6 +66,26 @@ function bullet(runs: TextRun[]): Paragraph {
   return new Paragraph({ bullet: { level: 0 }, spacing: { after: 60 }, children: runs });
 }
 
+/** Itzam logotype (pyramid + wordmark), dark version for the white page. */
+const LOGO_WIDTH_PX = 180;
+
+function logoParagraph(): Paragraph {
+  const data = Buffer.from(LOGOTYPE_LIGHT_PNG.split(",")[1], "base64");
+  return new Paragraph({
+    spacing: { after: 240 },
+    children: [
+      new ImageRun({
+        type: "png",
+        data,
+        transformation: {
+          width: LOGO_WIDTH_PX,
+          height: Math.round((LOGO_WIDTH_PX * LOGOTYPE_LIGHT_SIZE.height) / LOGOTYPE_LIGHT_SIZE.width),
+        },
+      }),
+    ],
+  });
+}
+
 export async function renderReportDocx(data: ReportPdfData): Promise<Buffer> {
   const { meta, locale, score, content } = data;
   const en = locale === "en";
@@ -70,8 +93,8 @@ export async function renderReportDocx(data: ReportPdfData): Promise<Buffer> {
   const valueByKey = new Map(score.dimensions.map((d) => [d.key, d.value] as const));
 
   const L = {
-    eyebrow: "AI FREE ASSESSMENT",
-    coverTitle: en ? "Your AI diagnostic for sales" : "Tu diagnóstico de IA para ventas",
+    eyebrow: "AI SALES READINESS ASSESSMENT",
+    coverTitle: en ? "Your Sales AI Diagnostic" : "Tu diagnóstico de IA para ventas",
     preparedFor: en ? "Prepared for" : "Preparado para",
     company: en ? "Company" : "Empresa",
     date: en ? "Date" : "Fecha",
@@ -96,7 +119,7 @@ export async function renderReportDocx(data: ReportPdfData): Promise<Buffer> {
     nextStepBody: en
       ? "Two weeks. A real diagnostic of your processes. An actionable plan with the 3–5 highest-impact opportunities — prioritized, with the route to implement them."
       : "Dos semanas. Un diagnóstico real de tus procesos. Un plan accionable con las 3–5 oportunidades de mayor impacto — priorizadas y con la ruta de cómo implementarlas.",
-    price: "desde $8,000 MXN · oferta por tiempo limitado",
+    price: en ? "from $8,000 MXN · limited-time offer" : "desde $8,000 MXN · oferta por tiempo limitado",
     cta: "itzam.ai/contact",
     freeCol: "AI Free Assessment",
     fullCol: "AI Opportunity Assessment",
@@ -138,6 +161,7 @@ export async function renderReportDocx(data: ReportPdfData): Promise<Buffer> {
 
   // Cover
   children.push(
+    logoParagraph(),
     new Paragraph({ spacing: { after: 80 }, children: [new TextRun({ text: L.eyebrow, bold: true, color: "3E93B0", size: 20 })] }),
     new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: L.coverTitle, bold: true, color: INK, size: 44 })] }),
     para([new TextRun({ text: content.subtitle, color: BODY, size: 24 })], { spacing: 240 }),
@@ -265,10 +289,32 @@ export async function renderReportDocx(data: ReportPdfData): Promise<Buffer> {
     ])
   );
 
+  // Running header on every page but the cover — mirrors the PDF's navy band.
+  const header = new Header({
+    children: [
+      new Paragraph({
+        alignment: AlignmentType.RIGHT,
+        children: [
+          new TextRun({
+            text: `${L.eyebrow} · ${meta.company.toUpperCase()}`,
+            color: "8A94A0",
+            size: 16,
+          }),
+        ],
+      }),
+    ],
+  });
+
   const doc = new Document({
     creator: "Itzam.AI",
-    title: `AI Free Assessment — ${meta.company}`,
-    sections: [{ properties: {}, children }],
+    title: `AI Sales Readiness Assessment — ${meta.company}`,
+    sections: [
+      {
+        properties: { titlePage: true },
+        headers: { default: header, first: new Header({ children: [] }) },
+        children,
+      },
+    ],
   });
   return Packer.toBuffer(doc) as Promise<Buffer>;
 }
