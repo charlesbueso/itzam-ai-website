@@ -1,5 +1,10 @@
 # Google Sheets — Apps Script setup
 
+> **Superseded:** use [`apps-script/contact-webhook.gs`](../apps-script/contact-webhook.gs).
+> It matches columns by header name and adds new ones automatically, such as
+> the lead-attribution columns. Setup steps are in the file header. The
+> snippet below is the original fixed-column version, kept for reference.
+
 Connect the waitlist form to a Google Sheet via Google Apps Script.
 
 ## 1. Create the sheet

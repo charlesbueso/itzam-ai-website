@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { ASSETS } from "@/lib/assets";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { Locale } from "@/lib/i18n/dictionaries";
+import { track } from "@/lib/analytics/gtag";
 
 /**
  * Navbar — logo left, hamburger right at every breakpoint.
@@ -280,6 +281,7 @@ function NavOverlay({
     { href: `/${locale}/services`, label: t.nav.links.services },
     { href: `/${locale}/assessment`, label: t.nav.links.assessment },
     { href: `/${locale}/about`, label: t.nav.links.about },
+    { href: `/${locale}/blog`, label: t.nav.links.blog },
     { href: `/${locale}/contact`, label: t.nav.links.contact },
   ];
 
@@ -335,6 +337,7 @@ export function LanguagePill({
 
   const switchTo = (target: Locale) => {
     if (target === locale) return;
+    track("language_switch", { from_language: locale, to_language: target });
     onSwitch?.();
     if (!pathname) {
       router.push(`/${target}`);

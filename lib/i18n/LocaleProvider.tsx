@@ -1,9 +1,10 @@
 "use client";
 
-import { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext, useEffect } from "react";
 import {
   DEFAULT_LOCALE,
   Dictionary,
+  HTML_LANG,
   Locale,
   getDictionary,
 } from "./dictionaries";
@@ -25,6 +26,13 @@ export function LocaleProvider({
   locale: Locale;
   children: ReactNode;
 }) {
+  // The root layout renders <html lang="en"> for every route; keep it in sync
+  // on client-side navigation (e.g. the EN|ES toggle). The initial value is
+  // set before paint by <HtmlLang> in the locale layouts.
+  useEffect(() => {
+    document.documentElement.lang = HTML_LANG[locale];
+  }, [locale]);
+
   const value: LocaleContextValue = {
     locale,
     t: getDictionary(locale),

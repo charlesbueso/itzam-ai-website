@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { getDictionary, isLocale } from "@/lib/i18n/dictionaries";
+import { pageMetadata } from "@/lib/seo";
 import HomePageClient from "./HomePageClient";
-
-const SITE_URL = "https://itzam.ai";
 
 export async function generateMetadata({
   params,
@@ -11,32 +10,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   if (!isLocale(params.locale)) return {};
   const dict = getDictionary(params.locale);
-  return {
+  // The home title already carries the brand — skip the "| Itzam.ai" suffix.
+  return pageMetadata({
+    locale: params.locale,
+    path: "",
     title: dict.meta.title,
     description: dict.meta.description,
-    alternates: {
-      canonical: `/${params.locale}`,
-      languages: {
-        en: "/en",
-        "en-US": "/en",
-        es: "/es",
-        "es-MX": "/es",
-        "x-default": "/en",
-      },
-    },
-    openGraph: {
-      title: dict.meta.title,
-      description: dict.meta.description,
-      locale: params.locale === "es" ? "es_MX" : "en_US",
-      url: `${SITE_URL}/${params.locale}`,
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: dict.meta.title,
-      description: dict.meta.description,
-    },
-  };
+    absoluteTitle: true,
+  });
 }
 
 export default function HomePage() {

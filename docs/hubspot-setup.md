@@ -77,8 +77,13 @@ Create these in HubSpot before going live (Settings → Properties).
 | `itzam_source`             | Itzam source              | Single-line    |
 | `itzam_questionnaire_id`   | Itzam questionnaire id    | Single-line    |
 
-> The integration never crashes if a custom property is missing — HubSpot
-> just rejects that one field with a 400, which our client logs as a warning.
+> HubSpot rejects the **whole** write (400) if any custom property is missing
+> or invalid, not just that field. `upsertContact` in `lib/hubspot/client.ts`
+> parses the rejected property names, drops them and retries, logging
+> `[hubspot] dropping rejected properties…`. When you see that warning, create
+> the property. `node scripts/hubspot-setup.mjs --apply` creates everything
+> the site writes, including the assessment and lead-attribution properties
+> (see [analytics-and-seo.md](analytics-and-seo.md)).
 
 ---
 

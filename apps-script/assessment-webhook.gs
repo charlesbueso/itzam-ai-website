@@ -4,7 +4,8 @@
  * All assessment logic lives here. Two actions, dispatched by the body:
  *   • Sheet row (default): { secret?, headers: [...], values: [...] }
  *       Appends one row per /assessment submission. Row 1 is written with
- *       `headers` the first time the sheet is empty.
+ *       `headers` the first time the sheet is empty; columns the site adds
+ *       later (always appended at the end) get their header filled in.
  *   • Save report:         { secret?, action: "save_report", filename,
  *                            company, file_base64, mime?, folder? }
  *       Saves a file (PDF or DOCX) into <parent>/<company>/, where <parent> is
@@ -65,14 +66,21 @@ function doPost(e) {
     }
 
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    var lock = LockService.getScriptLock();
+    lock.waitLock(10000);
+    try {
+      // Write the header row once, when the sheet is empty.
+      if (sheet.getLastRow() === 0 && headers.length) {
+        sheet.appendRow(headers.map(function (h) { return String(h).slice(0, 200); }));
+        sheet.setFrozenRows(1);
+      } else if (headers.length) {
+        fillMissingHeaders_(sheet, headers);
+      }
 
-    // Write the header row once, when the sheet is empty.
-    if (sheet.getLastRow() === 0 && headers.length) {
-      sheet.appendRow(headers.map(function (h) { return String(h).slice(0, 200); }));
-      sheet.setFrozenRows(1);
+      sheet.appendRow(values.map(cell_));
+    } finally {
+      lock.releaseLock();
     }
-
-    sheet.appendRow(values.map(function (v) { return String(v == null ? '' : v).slice(0, 5000); }));
 
     return jsonOut_({ ok: true });
   } catch (err) {
@@ -125,6 +133,31 @@ function saveReport_(props, body) {
     file_id: file.getId(),
     folder_url: clientFolder.getUrl(),
   });
+}
+
+/**
+ * Columns are positional and the site only ever APPENDS new ones (e.g. the
+ * lead-attribution columns). Label any header cell that is still blank so
+ * new columns don't show up untitled in an existing sheet.
+ */
+function fillMissingHeaders_(sheet, headers) {
+  var width = Math.max(sheet.getLastColumn(), headers.length);
+  var current = sheet.getRange(1, 1, 1, width).getValues()[0];
+  for (var i = 0; i < headers.length; i++) {
+    if (current[i] === '' || current[i] == null) {
+      sheet.getRange(1, i + 1).setValue(String(headers[i]).slice(0, 200));
+    }
+  }
+}
+
+/**
+ * Form input is untrusted: a value starting with = + - @ would be evaluated
+ * as a formula by appendRow (e.g. =IMPORTXML(...) exfiltrating the sheet).
+ * A leading apostrophe forces plain text and is not shown in the cell.
+ */
+function cell_(v) {
+  var s = String(v == null ? '' : v).slice(0, 5000);
+  return /^[=+\-@]/.test(s) ? "'" + s : s;
 }
 
 function sanitizeName_(name) {

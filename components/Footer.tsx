@@ -15,6 +15,7 @@ export default function Footer() {
     { href: `/${locale}/services`, label: t.nav.links.services },
     { href: `/${locale}/assessment`, label: t.nav.links.assessment },
     { href: `/${locale}/about`, label: t.nav.links.about },
+    { href: `/${locale}/blog`, label: t.nav.links.blog },
     { href: `/${locale}/contact`, label: t.nav.links.contact },
   ];
 

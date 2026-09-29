@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { getDictionary, isLocale } from "@/lib/i18n/dictionaries";
+import { SITE_URL, pageMetadata } from "@/lib/seo";
 import ContactPageClient from "./ContactPageClient";
-
-const SITE_URL = "https://itzam.ai";
 
 export async function generateMetadata({
   params,
@@ -11,32 +10,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   if (!isLocale(params.locale)) return {};
   const dict = getDictionary(params.locale);
-  return {
+  return pageMetadata({
+    locale: params.locale,
+    path: "/contact",
     title: dict.contact.meta.title,
     description: dict.contact.meta.description,
-    alternates: {
-      canonical: `/${params.locale}/contact`,
-      languages: {
-        en: "/en/contact",
-        "en-US": "/en/contact",
-        es: "/es/contact",
-        "es-MX": "/es/contact",
-        "x-default": "/en/contact",
-      },
-    },
-    openGraph: {
-      title: dict.contact.meta.title,
-      description: dict.contact.meta.description,
-      locale: params.locale === "es" ? "es_MX" : "en_US",
-      url: `${SITE_URL}/${params.locale}/contact`,
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: dict.contact.meta.title,
-      description: dict.contact.meta.description,
-    },
-  };
+  });
 }
 
 export default function ContactPage({

@@ -1,5 +1,7 @@
 import "server-only";
 
+import { nameParts } from "@/lib/leads/name";
+
 /**
  * HubSpot CRM v3 client — server-only.
  *
@@ -92,18 +94,8 @@ export type UpsertResult =
   | { ok: true; id: string; created: boolean }
   | { ok: false; error: string };
 
-function splitName(full?: string): { firstname?: string; lastname?: string } {
-  if (!full) return {};
-  const parts = full.trim().split(/\s+/);
-  if (parts.length === 1) return { firstname: parts[0] };
-  return {
-    firstname: parts.slice(0, -1).join(" "),
-    lastname: parts.slice(-1)[0],
-  };
-}
-
 export function nameFrom(fullName?: string, fallbacks?: { firstname?: string; lastname?: string }) {
-  const split = splitName(fullName);
+  const split = nameParts(fullName || "");
   return {
     firstname: split.firstname ?? fallbacks?.firstname,
     lastname: split.lastname ?? fallbacks?.lastname,
@@ -138,31 +130,63 @@ function buildContactProps(input: UpsertContactInput): Json {
 }
 
 /**
+ * HubSpot rejects the WHOLE write when any single property is invalid — a
+ * custom property that was never created (PROPERTY_DOESNT_EXIST), or a
+ * lifecycle stage moving backwards. Pull the offending property names out of
+ * the 400 body so the caller can drop them and retry. The details arrive as
+ * JSON embedded (escaped) in `message`, hence the tolerant regex.
+ */
+function rejectedPropertyNames(errText: string): string[] {
+  const names = new Set<string>();
+  for (const m of errText.matchAll(/\\?"name\\?"\s*:\s*\\?"([A-Za-z0-9_]+)\\?"/g)) {
+    names.add(m[1]);
+  }
+  names.delete("email");
+  return [...names];
+}
+
+/**
  * Create-or-update a contact keyed by email. Returns the HubSpot contact id.
  * Non-throwing — returns `{ ok: false, error }` on failure (or when HubSpot
- * is not configured).
+ * is not configured). Invalid properties are dropped and the write retried,
+ * so a missing custom property never loses the contact.
  */
 export async function upsertContact(input: UpsertContactInput): Promise<UpsertResult> {
   if (!isHubspotEnabled()) return { ok: false, error: "hubspot_not_configured" };
   if (!input.email) return { ok: false, error: "missing_email" };
 
   const properties = buildContactProps(input);
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const res = await upsertContactOnce(input.email, properties);
+    if (res.ok || !("rejected" in res) || !res.rejected.length) {
+      return res.ok ? res : { ok: false, error: res.error };
+    }
+    console.warn(`[hubspot] dropping rejected properties and retrying: ${res.rejected.join(", ")}`);
+    for (const name of res.rejected) delete properties[name];
+  }
+  return { ok: false, error: "too_many_rejected_properties" };
+}
+
+async function upsertContactOnce(
+  email: string,
+  properties: Json
+): Promise<UpsertResult | { ok: false; error: string; rejected: string[] }> {
+  const byEmail = `/crm/v3/objects/contacts/${encodeURIComponent(email)}?idProperty=email`;
+  const rejectedFrom = async (res: Response, label: string) => {
+    const errText = await res.text().catch(() => "");
+    const rejected = res.status === 400 ? rejectedPropertyNames(errText).filter((n) => n in properties) : [];
+    if (!rejected.length) console.warn(`[hubspot] upsertContact ${label} failed`, res.status, errText);
+    return { ok: false as const, error: `${label.toLowerCase()}_${res.status}`, rejected };
+  };
 
   try {
     // Try update-by-email first (idempotent, fast path for existing contacts).
-    const patchRes = await hsFetch(
-      `/crm/v3/objects/contacts/${encodeURIComponent(input.email)}?idProperty=email`,
-      { method: "PATCH", body: JSON.stringify({ properties }) }
-    );
+    const patchRes = await hsFetch(byEmail, { method: "PATCH", body: JSON.stringify({ properties }) });
     if (patchRes.ok) {
       const body = (await patchRes.json().catch(() => ({}))) as { id?: string };
       return { ok: true, id: String(body.id || ""), created: false };
     }
-    if (patchRes.status !== 404) {
-      const errText = await patchRes.text().catch(() => "");
-      console.warn("[hubspot] upsertContact PATCH failed", patchRes.status, errText);
-      return { ok: false, error: `patch_${patchRes.status}` };
-    }
+    if (patchRes.status !== 404) return rejectedFrom(patchRes, "PATCH");
 
     // 404 → create.
     const postRes = await hsFetch(`/crm/v3/objects/contacts`, {
@@ -170,20 +194,16 @@ export async function upsertContact(input: UpsertContactInput): Promise<UpsertRe
       body: JSON.stringify({ properties }),
     });
     if (!postRes.ok) {
-      const errText = await postRes.text().catch(() => "");
       // 409 = email already exists (race between PATCH 404 + POST). Re-PATCH.
       if (postRes.status === 409) {
-        const retry = await hsFetch(
-          `/crm/v3/objects/contacts/${encodeURIComponent(input.email)}?idProperty=email`,
-          { method: "PATCH", body: JSON.stringify({ properties }) }
-        );
+        const retry = await hsFetch(byEmail, { method: "PATCH", body: JSON.stringify({ properties }) });
         if (retry.ok) {
           const body = (await retry.json().catch(() => ({}))) as { id?: string };
           return { ok: true, id: String(body.id || ""), created: false };
         }
+        return rejectedFrom(retry, "PATCH");
       }
-      console.warn("[hubspot] upsertContact POST failed", postRes.status, errText);
-      return { ok: false, error: `post_${postRes.status}` };
+      return rejectedFrom(postRes, "POST");
     }
     const body = (await postRes.json().catch(() => ({}))) as { id?: string };
     return { ok: true, id: String(body.id || ""), created: true };

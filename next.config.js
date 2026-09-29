@@ -6,15 +6,8 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ["@react-pdf/renderer"],
   },
-  async redirects() {
-    return [
-      {
-        source: "/",
-        destination: "/en",
-        permanent: true,
-      },
-    ];
-  },
+  // `/` → /en or /es (by Accept-Language) lives in middleware.ts — config
+  // redirects run before middleware and can't vary by language.
 };
 
 module.exports = nextConfig;

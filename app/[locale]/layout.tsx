@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Navbar from "@/components/Navbar";
+import { HtmlLang } from "@/components/HtmlLang";
 import { LocaleProvider } from "@/lib/i18n/LocaleProvider";
 import {
   Locale,
@@ -8,8 +9,7 @@ import {
   getDictionary,
   isLocale,
 } from "@/lib/i18n/dictionaries";
-
-const SITE_URL = "https://itzam.ai";
+import { SITE_NAME, pageMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -23,30 +23,17 @@ export async function generateMetadata({
   if (!isLocale(params.locale)) return {};
   const dict = getDictionary(params.locale);
   return {
-    title: dict.meta.title,
-    description: dict.meta.description,
-    alternates: {
-      canonical: `/${params.locale}`,
-      languages: {
-        en: "/en",
-        "en-US": "/en",
-        es: "/es",
-        "es-MX": "/es",
-        "x-default": "/en",
-      },
-    },
-    openGraph: {
+    ...pageMetadata({
+      locale: params.locale,
+      path: "",
       title: dict.meta.title,
       description: dict.meta.description,
-      locale: params.locale === "es" ? "es_MX" : "en_US",
-      url: `${SITE_URL}/${params.locale}`,
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: dict.meta.title,
-      description: dict.meta.description,
-    },
+      absoluteTitle: true,
+    }),
+    // Re-declare the template here: a plain string title in this layout
+    // would otherwise cancel the root template for every child page
+    // (which is how /services ended up titled just "Services").
+    title: { default: dict.meta.title, template: `%s | ${SITE_NAME}` },
   };
 }
 
@@ -62,6 +49,7 @@ export default function LocaleLayout({
 
   return (
     <LocaleProvider locale={locale}>
+      <HtmlLang locale={locale} />
       <Navbar />
       {children}
     </LocaleProvider>

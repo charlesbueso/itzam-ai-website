@@ -3,6 +3,10 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useT, useLocale } from "@/lib/i18n/LocaleProvider";
+import { pageArea, track } from "@/lib/analytics/gtag";
+import { getAttribution } from "@/lib/analytics/attribution";
+import { identifyLead } from "@/components/HubSpot";
+import { nameParts } from "@/lib/leads/name";
 
 type Status = "idle" | "submitting" | "success" | "error";
 
@@ -55,6 +59,9 @@ export default function ContactForm({
       role: String(data.get("role") || "").trim(),
       use_case: String(data.get("use_case") || "").trim(),
       submitted_at: new Date().toISOString(),
+      locale,
+      page: window.location.pathname,
+      attribution: getAttribution(),
     };
 
     try {
@@ -67,6 +74,8 @@ export default function ContactForm({
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error || `Request failed (${res.status})`);
       }
+      track("generate_lead", { lead_type: "contact", form_location: pageArea() });
+      identifyLead({ email: payload.email, ...nameParts(payload.name), company: payload.company });
       setStatus("success");
       form.reset();
     } catch (err) {

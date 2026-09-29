@@ -47,6 +47,8 @@ export type AssessmentSheetInput = {
   score: ScoreResult;
   ip: string | null;
   userAgent: string | null;
+  /** Extra [header, value] pairs appended after the fixed columns (attribution). */
+  extraColumns?: [string, string][];
 };
 
 /** Build the ordered [headers, values] for the sheet row. Exported for tests. */
@@ -104,6 +106,12 @@ export function buildSheetRow(input: AssessmentSheetInput): {
   values.push(input.ip || "");
   headers.push("User Agent");
   values.push(input.userAgent || "");
+
+  // Appended last so existing rows keep their column positions.
+  for (const [h, v] of input.extraColumns ?? []) {
+    headers.push(h);
+    values.push(v);
+  }
 
   return { headers, values };
 }

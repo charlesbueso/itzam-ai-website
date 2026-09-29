@@ -14,6 +14,16 @@ import {
   htmlEscape,
 } from "@/lib/email/resend";
 import { assessmentConfirmationEmail } from "@/lib/email/templates";
+import {
+  AttributionSchema,
+  LeadPageSchema,
+  attributionEmailHtml,
+  attributionHubspotProps,
+  attributionNoteHtml,
+  attributionSheetColumns,
+  attributionText,
+} from "@/lib/leads/attribution";
+import { leadRateLimitOk } from "@/lib/leads/rateLimit";
 
 export const runtime = "nodejs";
 // The gated report pipeline (Haiku + Sonnet 5 + PDF + Drive + email) runs in
@@ -30,6 +40,9 @@ export const maxDuration = 60;
  *   4) Non-blocking: HubSpot contact upsert + note, confirmation email to the
  *      lead, internal notify. The team generates & sends the full report from
  *      the sheet.
+ *
+ * Attribution (first/last touch + submitting page) rides along to the Sheet,
+ * HubSpot and the team email — see lib/leads/attribution.ts.
  *
  * Returns { score, band, dimensions } for the instant on-screen result.
  */
@@ -51,6 +64,8 @@ const BodySchema = z.object({
   }),
   // Honeypot — real users never fill this.
   company_website: z.string().default(""),
+  attribution: AttributionSchema,
+  page: LeadPageSchema,
 });
 
 function validateAnswers(answers: SelfAnswers): string | null {
@@ -105,6 +120,16 @@ export async function POST(req: Request) {
     null;
   const userAgent = req.headers.get("user-agent")?.slice(0, 300) || null;
 
+  if (!(await leadRateLimitOk("assessment_submit_ip", ip))) {
+    return NextResponse.json({ error: "rate_limited" }, { status: 429 });
+  }
+
+  const { attribution, page } = parsed;
+  const origin = {
+    html: attributionEmailHtml(attribution, page),
+    text: attributionText(attribution, page),
+  };
+
   // Google Sheet is the store of record — fail the request if it doesn't land.
   try {
     await sendToSheet({
@@ -118,6 +143,7 @@ export async function POST(req: Request) {
       score,
       ip,
       userAgent,
+      extraColumns: attributionSheetColumns(attribution, page),
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
@@ -149,6 +175,8 @@ export async function POST(req: Request) {
         properties: {
           itzam_assessment_score: score.score,
           itzam_assessment_band: score.band,
+          itzam_preferred_locale: parsed.locale,
+          ...attributionHubspotProps(attribution, page),
         },
       });
       if (hs.ok) {
@@ -173,6 +201,7 @@ export async function POST(req: Request) {
             : "",
           parsed.wish ? `<p><strong>One thing to fix:</strong> ${htmlEscape(parsed.wish)}</p>` : "",
           parsed.comments ? `<p><strong>Comments:</strong> ${htmlEscape(parsed.comments)}</p>` : "",
+          attributionNoteHtml(attribution, page),
           `<p>${answerRows.join("<br/><br/>")}</p>`,
         ].join("");
         const note = await createNoteForContact({ contactId: hs.id, body: noteBody });
@@ -212,6 +241,7 @@ export async function POST(req: Request) {
         comments: parsed.comments.trim(),
         score,
         ip,
+        origin,
       });
     })().catch((e) => console.error("[assessment] background task threw", e))
   );

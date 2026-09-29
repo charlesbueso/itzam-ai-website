@@ -8,13 +8,27 @@ import {
   safeHeader,
 } from "@/lib/email/resend";
 import { upsertContact, createNoteForContact, nameFrom } from "@/lib/hubspot/client";
+import {
+  AttributionSchema,
+  LeadPageSchema,
+  attributionEmailHtml,
+  attributionHubspotProps,
+  attributionNoteHtml,
+  attributionSheetColumns,
+  attributionText,
+} from "@/lib/leads/attribution";
+import { leadRateLimitOk } from "@/lib/leads/rateLimit";
 
 export const runtime = "nodejs";
 
 /**
  * Contact form submissions.
- * 1) Forwards row to Google Sheets (same webhook as before).
- * 2) Fires a non-blocking Resend email to INTERNAL_NOTIFY_EMAIL.
+ * 1) Appends a row to the contact Google Sheet (hard dependency).
+ * 2) Non-blocking: team notification + confirmation email (Resend), HubSpot
+ *    contact upsert + timeline note.
+ *
+ * Every destination carries the lead's attribution (first/last touch + the
+ * page the form was sent from) — see lib/leads/attribution.ts.
  *
  * Env: GOOGLE_SHEETS_WEBHOOK_URL, INTERNAL_NOTIFY_EMAIL (optional).
  */
@@ -50,6 +64,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   }
 
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
+  if (!(await leadRateLimitOk("contact_form_ip", ip))) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const webhook = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
   if (!webhook) {
     console.error("GOOGLE_SHEETS_WEBHOOK_URL is not set");
@@ -59,16 +78,53 @@ export async function POST(req: Request) {
     );
   }
 
+  const isWaitlist = new URL(req.url).pathname.includes("waitlist");
+  const source = isWaitlist ? "waitlist" : "contact_form";
+  const attribution = AttributionSchema.parse(body.attribution);
+  const page = LeadPageSchema.parse(body.page);
+  // The client sends its locale; fall back to the Referer path for older
+  // clients (the form lives on /en/* and /es/* pages).
+  const locale: "es" | "en" =
+    body.locale === "en" || body.locale === "es"
+      ? body.locale
+      : /^\/en(\/|$)/.test(refererPath(req))
+        ? "en"
+        : "es";
+  const submittedAt = new Date().toISOString();
+  const userAgent = req.headers.get("user-agent") || null;
+
+  // Row for the Sheet. `headers`/`values` are matched by header name by
+  // apps-script/contact-webhook.gs (new columns are added automatically); the
+  // flat fields keep older deployments of the script working unchanged.
+  const columns: [string, string][] = [
+    ["submitted_at", submittedAt],
+    ["name", name],
+    ["email", email],
+    ["company", company],
+    ["role", role],
+    ["use_case", use_case],
+    ["ip", ip || ""],
+    ["user_agent", userAgent || ""],
+    ["locale", locale],
+    ["source", source],
+    ...attributionSheetColumns(attribution, page),
+  ];
+
   try {
     const res = await fetch(webhook, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        ...body,
-        ip:
-          req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-          null,
-        user_agent: req.headers.get("user-agent") || null,
+        submitted_at: submittedAt,
+        name,
+        email,
+        company,
+        role,
+        use_case,
+        ip,
+        user_agent: userAgent,
+        headers: columns.map(([h]) => h),
+        values: columns.map(([, v]) => v),
       }),
     });
     const responseBody = await res.json().catch(() => null);
@@ -87,11 +143,16 @@ export async function POST(req: Request) {
     );
   }
 
+  const origin = {
+    html: attributionEmailHtml(attribution, page),
+    text: attributionText(attribution, page),
+  };
+
   // Non-blocking Resend notification.
   const notifyTo = process.env.INTERNAL_NOTIFY_EMAIL || RESEND_REPLY_TO;
   const resend = getResend();
   if (resend && notifyTo) {
-    const tpl = contactNotification({ name, email, company, role, use_case });
+    const tpl = contactNotification({ name, email, company, role, use_case, origin });
     void resend.emails
       .send({
         from: RESEND_FROM,
@@ -105,20 +166,6 @@ export async function POST(req: Request) {
         console.error("Resend contact notification failed:", err);
       });
   }
-
-  // Detect locale + variant from the request. The form lives at both
-  // /en/contact and /es/contact (plus the legacy /api/waitlist alias).
-  const referer = req.headers.get("referer") || "";
-  const path = (() => {
-    try {
-      return new URL(referer).pathname;
-    } catch {
-      return "";
-    }
-  })();
-  const locale: "es" | "en" = /^\/en(\/|$)/.test(path) ? "en" : "es";
-  const isWaitlist = new URL(req.url).pathname.includes("waitlist");
-  const source = isWaitlist ? "waitlist" : "contact_form";
 
   // Non-blocking confirmation email to the submitter. Reply-To is our
   // internal address so any reply lands in the team inbox.
@@ -162,6 +209,8 @@ export async function POST(req: Request) {
           // (Settings → Properties → Contacts → multi-line text). It's also
           // duplicated in the Note below so it's always visible regardless.
           itzam_use_case: use_case || null,
+          itzam_preferred_locale: locale,
+          ...attributionHubspotProps(attribution, page),
         },
       });
       if (!r.ok) {
@@ -184,6 +233,7 @@ export async function POST(req: Request) {
         `<strong>Source:</strong> ${escapeHtml(source)}</p>`,
         `<p><strong>Message:</strong></p>`,
         `<p>${escapeHtml(use_case).replace(/\n/g, "<br/>")}</p>`,
+        attributionNoteHtml(attribution, page),
       ].join("");
       const noteRes = await createNoteForContact({ contactId: r.id, body: noteBody });
       if (!noteRes.ok) {
@@ -199,6 +249,14 @@ export async function POST(req: Request) {
   );
 
   return NextResponse.json({ ok: true });
+}
+
+function refererPath(req: Request): string {
+  try {
+    return new URL(req.headers.get("referer") || "").pathname;
+  } catch {
+    return "";
+  }
 }
 
 function escapeHtml(s: string): string {

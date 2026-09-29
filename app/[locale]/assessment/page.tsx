@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { getDictionary, isLocale } from "@/lib/i18n/dictionaries";
+import { SITE_URL, faqJsonLd, pageMetadata } from "@/lib/seo";
 import AssessmentPageClient from "./AssessmentPageClient";
-
-const SITE_URL = "https://itzam.ai";
 
 export async function generateMetadata({
   params,
@@ -11,32 +10,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   if (!isLocale(params.locale)) return {};
   const dict = getDictionary(params.locale);
-  return {
+  return pageMetadata({
+    locale: params.locale,
+    path: "/assessment",
     title: dict.assessment.meta.title,
     description: dict.assessment.meta.description,
-    alternates: {
-      canonical: `/${params.locale}/assessment`,
-      languages: {
-        en: "/en/assessment",
-        "en-US": "/en/assessment",
-        es: "/es/assessment",
-        "es-MX": "/es/assessment",
-        "x-default": "/en/assessment",
-      },
-    },
-    openGraph: {
-      title: dict.assessment.meta.title,
-      description: dict.assessment.meta.description,
-      locale: params.locale === "es" ? "es_MX" : "en_US",
-      url: `${SITE_URL}/${params.locale}/assessment`,
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: dict.assessment.meta.title,
-      description: dict.assessment.meta.description,
-    },
-  };
+  });
 }
 
 export default function AssessmentPage({
@@ -72,6 +51,12 @@ export default function AssessmentPage({
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(faqJsonLd({ url, locale: params.locale, items: dict.assessment.faq.items })),
+        }}
       />
       <AssessmentPageClient />
     </>

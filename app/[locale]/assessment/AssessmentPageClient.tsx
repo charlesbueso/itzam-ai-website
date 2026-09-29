@@ -1,6 +1,7 @@
 "use client";
 
 import AssessmentFlow from "@/components/AssessmentFlow";
+import Faq from "@/components/Faq";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
 import RevealText from "@/components/RevealText";
@@ -44,6 +45,13 @@ export default function AssessmentPageClient() {
           </div>
         </div>
       </section>
+
+      <Faq
+        eyebrow={t.assessment.faq.eyebrow}
+        heading={t.assessment.faq.heading}
+        items={t.assessment.faq.items}
+        className="border-t border-white/10"
+      />
 
       <Footer />
     </main>

@@ -1,6 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Script from "next/script";
+
+/** Production hosts only — keeps previews/localhost out of HubSpot analytics. */
+const HUBSPOT_HOSTS = new Set(["itzam.ai", "www.itzam.ai", "app.itzam.ai"]);
 
 /**
  * HubSpot tracking code (`_hsq`) — site-wide.
@@ -10,14 +14,19 @@ import Script from "next/script";
  * `hsTrack.trackPageView()` to associate browser sessions with CRM contacts.
  *
  * Set `NEXT_PUBLIC_HUBSPOT_PORTAL_ID` in env. If unset, this renders
- * nothing (safe no-op for local dev).
+ * nothing (safe no-op for local dev). Only loads on production hosts.
  *
  * GDPR/consent: HubSpot respects a `_hsp.push(['doNotTrack'])` call. If you
  * add a consent banner later, wire it through here.
  */
 export default function HubSpot() {
   const portalId = process.env.NEXT_PUBLIC_HUBSPOT_PORTAL_ID;
-  if (!portalId) return null;
+  const [onProdHost, setOnProdHost] = useState(false);
+  useEffect(() => {
+    setOnProdHost(HUBSPOT_HOSTS.has(window.location.hostname.toLowerCase()));
+  }, []);
+
+  if (!portalId || !onProdHost) return null;
   if (process.env.NEXT_PUBLIC_DISABLE_ANALYTICS === "1") return null;
 
   return (
@@ -72,3 +81,13 @@ export const hsTrack = {
     push(["trackEvent", event]);
   },
 };
+
+/**
+ * Tie this browser's HubSpot visitor history (original source, pages seen)
+ * to the CRM contact a form just created. `identify` is only sent with the
+ * next tracked event, hence the page view right after it.
+ */
+export function identifyLead(traits: { email: string; firstname?: string; lastname?: string; company?: string }) {
+  hsTrack.identify(traits);
+  hsTrack.trackPageView();
+}
