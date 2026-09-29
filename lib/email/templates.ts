@@ -158,6 +158,8 @@ export function contactNotification(opts: {
   company: string;
   role: string;
   use_case: string;
+  /** Pre-rendered "Origen del lead" block (lib/leads/attribution.ts). */
+  origin?: { html: string; text: string };
 }): { subject: string; html: string; text: string } {
   const name = htmlEscape(opts.name);
   const email = htmlEscape(opts.email);
@@ -173,12 +175,13 @@ export function contactNotification(opts: {
     <p style="margin:0 0 16px 0;"><strong>Rol:</strong> ${role}</p>
     <p style="margin:0 0 8px 0;font-size:13px;color:#666666;text-transform:uppercase;letter-spacing:0.08em;">Mensaje</p>
     <p style="margin:0 0 16px 0;padding:14px 16px;background:#f6f5f1;border-left:3px solid #c9a14a;border-radius:4px;">${useCase}</p>
+    ${opts.origin?.html ?? ""}
     ${brandButton({ href: `mailto:${opts.email}`, label: "Responder" })}
   `;
 
   return {
     subject: `[Itzam] Nuevo contacto — ${opts.name} (${opts.company})`,
-    text: `Nuevo contacto:\n\nNombre: ${opts.name}\nEmail: ${opts.email}\nEmpresa: ${opts.company}\nRol: ${opts.role}\n\nMensaje:\n${opts.use_case}`,
+    text: `Nuevo contacto:\n\nNombre: ${opts.name}\nEmail: ${opts.email}\nEmpresa: ${opts.company}\nRol: ${opts.role}\n\nMensaje:\n${opts.use_case}${opts.origin?.text ?? ""}`,
     html: renderBrandedEmail({
       body,
       preheader: `${opts.name} de ${opts.company} envió un mensaje.`,
@@ -365,6 +368,8 @@ export function assessmentTeamEmail(opts: {
   status: ReportStatus;
   driveUrl?: string;
   legitReason?: string;
+  /** Pre-rendered "Origen del lead" block (lib/leads/attribution.ts). */
+  origin?: { html: string; text: string };
 }): { subject: string; html: string; text: string } {
   const st = STATUS_COPY[opts.status];
   const body = `
@@ -378,13 +383,14 @@ export function assessmentTeamEmail(opts: {
     <p style="margin:0 0 8px 0;"><strong>Cuello de botella #1:</strong> ${htmlEscape(opts.bottleneck)}</p>
     ${opts.wish ? `<p style="margin:0 0 8px 0;"><strong>Deseo:</strong> ${htmlEscape(opts.wish)}</p>` : ""}
     ${opts.legitReason ? `<p style="margin:0 0 8px 0;color:#a15c00;"><strong>Chequeo IA:</strong> ${htmlEscape(opts.legitReason)}</p>` : ""}
+    ${opts.origin?.html ?? ""}
     ${opts.driveUrl ? brandButton({ href: opts.driveUrl, label: "Abrir reporte en Drive" }) : ""}
     <p style="margin:16px 0 0 0;font-size:13px;color:#666666;">Respuestas completas en la nota del contacto en HubSpot y en el Sheet de assessments.</p>
   `;
 
   return {
     subject: `[Itzam] ${st.emoji} ${opts.company} — ${opts.score}/100 · ${st.label}`,
-    text: `${st.label}\n${st.note}\n\nNombre: ${opts.name}\nEmail: ${opts.email}\nEmpresa: ${opts.company}\nPuesto: ${opts.role}\nScore: ${opts.score}/100 (${opts.band})\nCuello #1: ${opts.bottleneck}${opts.wish ? `\nDeseo: ${opts.wish}` : ""}${opts.driveUrl ? `\nDrive: ${opts.driveUrl}` : ""}`,
+    text: `${st.label}\n${st.note}\n\nNombre: ${opts.name}\nEmail: ${opts.email}\nEmpresa: ${opts.company}\nPuesto: ${opts.role}\nScore: ${opts.score}/100 (${opts.band})\nCuello #1: ${opts.bottleneck}${opts.wish ? `\nDeseo: ${opts.wish}` : ""}${opts.driveUrl ? `\nDrive: ${opts.driveUrl}` : ""}${opts.origin?.text ?? ""}`,
     html: renderBrandedEmail({
       body,
       preheader: `${st.label} — ${opts.company} (${opts.score}/100)`,

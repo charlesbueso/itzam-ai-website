@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { getDictionary, isLocale } from "@/lib/i18n/dictionaries";
+import { SITE_URL, pageMetadata } from "@/lib/seo";
 import AboutPageClient from "./AboutPageClient";
-
-const SITE_URL = "https://itzam.ai";
 
 export async function generateMetadata({
   params,
@@ -11,32 +10,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   if (!isLocale(params.locale)) return {};
   const dict = getDictionary(params.locale);
-  return {
+  return pageMetadata({
+    locale: params.locale,
+    path: "/about",
     title: dict.about.meta.title,
     description: dict.about.meta.description,
-    alternates: {
-      canonical: `/${params.locale}/about`,
-      languages: {
-        en: "/en/about",
-        "en-US": "/en/about",
-        es: "/es/about",
-        "es-MX": "/es/about",
-        "x-default": "/en/about",
-      },
-    },
-    openGraph: {
-      title: dict.about.meta.title,
-      description: dict.about.meta.description,
-      locale: params.locale === "es" ? "es_MX" : "en_US",
-      url: `${SITE_URL}/${params.locale}/about`,
-      type: "profile",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: dict.about.meta.title,
-      description: dict.about.meta.description,
-    },
-  };
+    ogType: "profile",
+  });
 }
 
 export default function AboutPage({

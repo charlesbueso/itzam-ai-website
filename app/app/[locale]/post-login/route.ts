@@ -5,6 +5,7 @@ import { getSessionUser } from "@/lib/auth/requireUser";
 import { readPendingInvite, clearPendingInvite } from "@/lib/auth/pendingInvite";
 import { validateInvite } from "@/lib/auth/invite";
 import { findClientLandingQuestionnaire } from "@/lib/auth/clientLanding";
+import { INTERNAL_COOKIE } from "@/lib/analytics/gtag";
 
 /**
  * Post-login dispatcher.
@@ -13,7 +14,7 @@ import { findClientLandingQuestionnaire } from "@/lib/auth/clientLanding";
  *   1. Explicit `?next=` (validated against an allowlist) — supports
  *      bookmarked deep links from any device.
  *   2. Stashed pending invite cookie → bounce through invite gateway.
- *   3. Admin → /admin.
+ *   3. Admin → /admin (and flagged as internal traffic for GA4).
  *   4. Returning client → most recent active questionnaire they own or
  *      collaborate on.
  *   5. Otherwise → /login?reason=no-invite.
@@ -47,10 +48,27 @@ export async function GET(
     return NextResponse.redirect(new URL(`/${locale}/login`, url.origin));
   }
 
+  // Admins are the team: tag their browser as internal traffic for GA4
+  // across *.itzam.ai, so our own visits to the marketing site stop counting.
+  const redirectTo = (path: string) => {
+    const res = NextResponse.redirect(new URL(path, url.origin));
+    if (user.isAdmin) {
+      const onItzam = url.hostname === "itzam.ai" || url.hostname.endsWith(".itzam.ai");
+      res.cookies.set(INTERNAL_COOKIE, "1", {
+        path: "/",
+        maxAge: 365 * 24 * 3600,
+        sameSite: "lax",
+        secure: url.protocol === "https:",
+        ...(onItzam ? { domain: ".itzam.ai" } : {}),
+      });
+    }
+    return res;
+  };
+
   // 1. Explicit next (bookmarked link).
   const next = safeNext(url.searchParams.get("next"));
   if (next) {
-    return NextResponse.redirect(new URL(next, url.origin));
+    return redirectTo(next);
   }
 
   // 2. Pending invite cookie (signup → invite flow).
@@ -59,12 +77,7 @@ export async function GET(
     const valid = await validateInvite(pending.id, pending.t);
     if (valid) {
       clearPendingInvite();
-      return NextResponse.redirect(
-        new URL(
-          `/${locale}/invite/${pending.id}?t=${pending.t}`,
-          url.origin
-        )
-      );
+      return redirectTo(`/${locale}/invite/${pending.id}?t=${pending.t}`);
     }
     // Stale cookie — clear and fall through.
     clearPendingInvite();
@@ -72,7 +85,7 @@ export async function GET(
 
   // 3. Admin.
   if (user.isAdmin) {
-    return NextResponse.redirect(new URL(`/${locale}/admin`, url.origin));
+    return redirectTo(`/${locale}/admin`);
   }
 
   // 4. Returning client — find their questionnaire.
@@ -82,11 +95,9 @@ export async function GET(
       landing.status === "completed"
         ? `/${locale}/cuestionario/${landing.id}/gracias`
         : `/${locale}/cuestionario/${landing.id}`;
-    return NextResponse.redirect(new URL(target, url.origin));
+    return redirectTo(target);
   }
 
   // 5. Authenticated client without a known questionnaire.
-  return NextResponse.redirect(
-    new URL(`/${locale}/login?reason=no-invite`, url.origin)
-  );
+  return redirectTo(`/${locale}/login?reason=no-invite`);
 }

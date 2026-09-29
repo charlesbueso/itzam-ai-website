@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { getDictionary, isLocale } from "@/lib/i18n/dictionaries";
+import { SITE_URL, faqJsonLd, pageMetadata } from "@/lib/seo";
 import ServicesPageClient from "./ServicesPageClient";
-
-const SITE_URL = "https://itzam.ai";
 
 export async function generateMetadata({
   params,
@@ -11,32 +10,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   if (!isLocale(params.locale)) return {};
   const dict = getDictionary(params.locale);
-  return {
+  return pageMetadata({
+    locale: params.locale,
+    path: "/services",
     title: dict.services.meta.title,
     description: dict.services.meta.description,
-    alternates: {
-      canonical: `/${params.locale}/services`,
-      languages: {
-        en: "/en/services",
-        "en-US": "/en/services",
-        es: "/es/services",
-        "es-MX": "/es/services",
-        "x-default": "/en/services",
-      },
-    },
-    openGraph: {
-      title: dict.services.meta.title,
-      description: dict.services.meta.description,
-      locale: params.locale === "es" ? "es_MX" : "en_US",
-      url: `${SITE_URL}/${params.locale}/services`,
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: dict.services.meta.title,
-      description: dict.services.meta.description,
-    },
-  };
+  });
 }
 
 export default function ServicesPage({
@@ -103,6 +82,12 @@ export default function ServicesPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(serviceCatalogJsonLd),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(faqJsonLd({ url, locale: params.locale, items: dict.services.faq.items })),
         }}
       />
       <ServicesPageClient />

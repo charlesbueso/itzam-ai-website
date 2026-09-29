@@ -4,7 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
  * Host-based subdomain rewrite + security headers for the authenticated app.
  *
  * - `app.itzam.ai/<path>`        → internally serves `/app/<path>`
- * - `itzam.ai/...`               → unchanged (landing)
+ * - `itzam.ai/...`               → landing; `/` and un-prefixed pages are
+ *                                  redirected to /en or /es (see landingRedirect)
  * - In dev, you can hit `/app/...` directly. Set `FORCE_APP_HOST=1` to also
  *   force the rewrite locally if you want to test the bare-path redirect.
  *
@@ -75,12 +76,65 @@ function setSecurityHeaders(res: NextResponse, pathname: string) {
   );
 }
 
+// ─────────────────────────── landing (itzam.ai) ───────────────────────────
+
+/** Public pages that also answer without a locale prefix (old links, typed URLs). */
+const BARE_PAGES = new Set(["/services", "/assessment", "/about", "/contact", "/blog", "/privacy", "/terms"]);
+/** Retired URLs that still get visits → their current page (locale-relative). */
+const LEGACY_PAGES: Record<string, string> = {
+  "/ai-opportunity-assessment": "/assessment",
+};
+
+/** "es" when the browser prefers Spanish over English, else "en" (x-default). */
+function preferredLocale(req: NextRequest): "en" | "es" {
+  const header = req.headers.get("accept-language") || "";
+  const tags = header
+    .split(",")
+    .map((part) => {
+      const [tag, q] = part.trim().split(";q=");
+      return { tag: tag.toLowerCase(), q: q ? Number(q) || 0 : 1 };
+    })
+    .sort((a, b) => b.q - a.q);
+  for (const { tag } of tags) {
+    if (tag.startsWith("es")) return "es";
+    if (tag.startsWith("en")) return "en";
+  }
+  return "en";
+}
+
+/**
+ * `/` and un-prefixed pages redirect to the visitor's language (307 + Vary,
+ * since the target depends on Accept-Language; crawlers without the header
+ * land on /en, matching x-default). Legacy URLs redirect permanently.
+ */
+function landingRedirect(req: NextRequest): NextResponse | null {
+  const { pathname } = req.nextUrl;
+  if (pathname.startsWith("/api/") || pathname.startsWith("/app")) return null;
+
+  const prefixed = pathname.match(/^\/(en|es)(\/.*)?$/);
+  if (prefixed) {
+    const legacy = LEGACY_PAGES[prefixed[2] || ""];
+    if (!legacy) return null;
+    const url = req.nextUrl.clone();
+    url.pathname = `/${prefixed[1]}${legacy}`;
+    return NextResponse.redirect(url, 308);
+  }
+
+  const target = pathname === "/" ? "" : LEGACY_PAGES[pathname] ?? (BARE_PAGES.has(pathname) ? pathname : null);
+  if (target === null) return null;
+  const url = req.nextUrl.clone();
+  url.pathname = `/${preferredLocale(req)}${target}`;
+  const res = NextResponse.redirect(url, 307);
+  res.headers.set("Vary", "Accept-Language");
+  return res;
+}
+
 export function middleware(req: NextRequest) {
   const host = req.headers.get("host");
   const url = req.nextUrl.clone();
 
   if (!isAppHost(host)) {
-    return NextResponse.next();
+    return landingRedirect(req) ?? NextResponse.next();
   }
 
   // /api/* must NOT be rewritten — route handlers live at the project root.

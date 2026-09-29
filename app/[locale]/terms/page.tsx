@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { getDictionary, isLocale } from "@/lib/i18n/dictionaries";
+import { pageMetadata } from "@/lib/seo";
 import { getTerms } from "@/lib/i18n/legal";
 import LegalPage from "@/components/LegalPage";
-
-const SITE_URL = "https://itzam.ai";
 
 export async function generateMetadata({
   params,
@@ -12,27 +11,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   if (!isLocale(params.locale)) return {};
   const dict = getDictionary(params.locale);
-  return {
+  return pageMetadata({
+    locale: params.locale,
+    path: "/terms",
     title: dict.legal.terms.meta.title,
     description: dict.legal.terms.meta.description,
-    alternates: {
-      canonical: `/${params.locale}/terms`,
-      languages: {
-        en: "/en/terms",
-        "en-US": "/en/terms",
-        es: "/es/terms",
-        "es-MX": "/es/terms",
-        "x-default": "/en/terms",
-      },
-    },
-    openGraph: {
-      title: dict.legal.terms.meta.title,
-      description: dict.legal.terms.meta.description,
-      locale: params.locale === "es" ? "es_MX" : "en_US",
-      url: `${SITE_URL}/${params.locale}/terms`,
-      type: "article",
-    },
-  };
+    ogType: "article",
+  });
 }
 
 export default function TermsPage({

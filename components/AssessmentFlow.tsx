@@ -5,6 +5,10 @@ import Link from "next/link";
 import { useLocale } from "@/lib/i18n/LocaleProvider";
 import { SELF_QUESTIONS, type SelfQuestion } from "@/lib/assessment/questions";
 import type { Band, DimensionKey } from "@/lib/assessment/scoring";
+import { pageArea, track } from "@/lib/analytics/gtag";
+import { getAttribution } from "@/lib/analytics/attribution";
+import { identifyLead } from "@/components/HubSpot";
+import { nameParts } from "@/lib/leads/name";
 
 /**
  * Self-serve Free AI Assessment: one-page form → instant deterministic score.
@@ -46,6 +50,14 @@ export default function AssessmentFlow() {
   const [result, setResult] = useState<SubmitResult | null>(null);
 
   const topRef = useRef<HTMLDivElement>(null);
+  const started = useRef(false);
+
+  // Funnel step: first interaction with the form (answer or contact field).
+  function markStarted() {
+    if (started.current) return;
+    started.current = true;
+    track("assessment_start", { form_location: pageArea() });
+  }
 
   const requiredCount = useMemo(
     () => SELF_QUESTIONS.filter((q) => q.required).length + 1, // +1 = email
@@ -64,6 +76,7 @@ export default function AssessmentFlow() {
   }, [answers, contact.email]);
 
   function setSingle(key: string, value: string) {
+    markStarted();
     setAnswers((prev) => {
       // Tapping the selected option again deselects (useful for optional Qs).
       const next = { ...prev };
@@ -74,6 +87,7 @@ export default function AssessmentFlow() {
   }
 
   function toggleMulti(key: string, value: string) {
+    markStarted();
     setAnswers((prev) => {
       const cur = Array.isArray(prev[key]) ? (prev[key] as string[]) : [];
       const next = cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value];
@@ -104,6 +118,7 @@ export default function AssessmentFlow() {
     setErrorMsg(null);
     if (!validate()) {
       setErrorMsg(a.errors.missing);
+      track("assessment_error", { reason: "validation" });
       return;
     }
     setPhase("submitting");
@@ -125,20 +140,31 @@ export default function AssessmentFlow() {
             phone: contact.phone.trim(),
           },
           company_website: "",
+          page: window.location.pathname,
+          attribution: getAttribution(),
         }),
       });
       if (res.status === 429) {
         setPhase("form");
         setErrorMsg(a.errors.rateLimited);
+        track("assessment_error", { reason: "rate_limited" });
         return;
       }
       if (!res.ok) throw new Error(`submit ${res.status}`);
       const body = (await res.json()) as SubmitResult;
+      track("generate_lead", {
+        lead_type: "assessment",
+        form_location: pageArea(),
+        assessment_score: body.score,
+        assessment_band: body.band,
+      });
+      identifyLead({ email: contact.email.trim(), ...nameParts(contact.name), company: contact.company.trim() });
       setResult(body);
       setPhase("score");
       topRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (err) {
       console.error("assessment submit failed", err);
+      track("assessment_error", { reason: "server" });
       setPhase("form");
       setErrorMsg(a.errors.generic);
     }
@@ -166,7 +192,10 @@ export default function AssessmentFlow() {
           onOtherText={(key, v) => setOtherTexts((p) => ({ ...p, [key]: v }))}
           onWish={setWish}
           onComments={setComments}
-          onContact={(field, v) => setContact((p) => ({ ...p, [field]: v }))}
+          onContact={(field, v) => {
+            markStarted();
+            setContact((p) => ({ ...p, [field]: v }));
+          }}
           onAccept={setAccepted}
           onSubmit={handleSubmit}
         />

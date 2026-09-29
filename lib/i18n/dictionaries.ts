@@ -4,11 +4,14 @@ export const LOCALES: Locale[] = ["en", "es"];
 
 export const DEFAULT_LOCALE: Locale = "en";
 
+/** BCP-47 tag for `<html lang>` — matches the hreflang we publish. */
+export const HTML_LANG: Record<Locale, string> = { en: "en", es: "es-MX" };
+
 export type Dictionary = {
   meta: { title: string; description: string };
   nav: {
     home: string; cta: string; switchLanguage: string; openMenu: string; closeMenu: string;
-    links: { home: string; services: string; about: string; contact: string; assessment: string };
+    links: { home: string; services: string; about: string; contact: string; assessment: string; blog: string };
   };
   common: { learnMore: string; requestQuote: string; talkToUs: string; backToTop: string; comingSoon: string; addOn: string };
   home: {
@@ -23,6 +26,7 @@ export type Dictionary = {
     sectionLabels: { whatIs: string; deliverables: string; tech: string; target: string };
     items: { slug: string; number: string; title: string; tagline: string; whatIs: string; target?: string; deliverables: string[]; tech: string[]; callout?: { label: string; title: string; body: string } }[];
     closing: { heading: string; body: string; cta: string };
+    faq: { eyebrow: string; heading: string; items: { q: string; a: string }[] };
   };
   about: {
     meta: { title: string; description: string };
@@ -38,6 +42,7 @@ export type Dictionary = {
   };
   assessment: {
     meta: { title: string; description: string };
+    faq: { eyebrow: string; heading: string; items: { q: string; a: string }[] };
     hero: { eyebrow: string; heading1: string; heading2: string; sub: string; meta: string };
     progress: string;
     sections: { company: string; scale: string; tools: string; process: string; ai: string };
@@ -59,6 +64,15 @@ export type Dictionary = {
       cta: { heading: string; body: string; button: string };
       disclaimer: string;
     };
+  };
+  blog: {
+    meta: { title: string; description: string };
+    eyebrow: string; heading1: string; heading2: string; sub: string;
+    categories: { case_study: string; guide: string };
+    /** "{n}" = minutes */
+    minRead: string;
+    by: string; backToBlog: string; related: string; readArticle: string;
+    cta: Record<"assessment" | "contact", { heading: string; body: string; button: string }>;
   };
   footer: { tagline: string; sectionsLabel: string; contactLabel: string; languageLabel: string; rights: string; legalLabel: string; privacyLink: string; termsLink: string };
   legal: {
@@ -94,7 +108,7 @@ export type Dictionary = {
 export const dictionaries: Record<Locale, Dictionary> = {
   en: {
     meta: {
-      title: "Itzam.AI — AI for Sales Teams in Mexico and LatAm.",
+      title: "Itzam.ai — AI for Sales Teams in Mexico and LatAm",
       description: "Itzam.AI automates your sales operation with AI — in weeks, not months. From a 2-week diagnostic to deployed AI systems, built for commercial teams in Mexico and LatAm.",
     },
     nav: {
@@ -103,7 +117,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       switchLanguage: "Switch language",
       openMenu: "Open menu",
       closeMenu: "Close menu",
-      links: { home: "Home", services: "Services", about: "About", contact: "Contact", assessment: "Free AI Assessment" },
+      links: { home: "Home", services: "Services", about: "About", contact: "Contact", assessment: "Free AI Assessment", blog: "Blog" },
     },
     common: { learnMore: "Learn more", requestQuote: "Request a quote", talkToUs: "Talk to us", backToTop: "Back to top", comingSoon: "Coming soon", addOn: "Add-on" },
     home: {
@@ -136,7 +150,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       },
     },
     services: {
-      meta: { title: "Services", description: "From AI Opportunity Assessments to deployed AI systems — Itzam.ai's full service catalog for commercial teams in Mexico and LatAm." },
+      meta: { title: "AI Services for Sales Teams in Mexico & LatAm", description: "AI Opportunity Assessment, Sales Playbook Generator, a 24/7 WhatsApp support agent and a Business Brain for your company — AI services for sales teams in Mexico and LatAm, delivered in weeks." },
       eyebrow: "Services",
       heading1: "From assessment",
       heading2: "to production.",
@@ -190,9 +204,21 @@ export const dictionaries: Record<Locale, Dictionary> = {
         },
       ],
       closing: { heading: "Not sure which one fits?", body: "Tell us where you are and we'll point to the right starting move — or build a custom engagement.", cta: "Talk to us" },
+      faq: {
+        eyebrow: "FAQ",
+        heading: "Questions sales leaders ask us.",
+        items: [
+          { q: "Where should we start with AI in our sales team?", a: "With the AI Opportunity Assessment: a two-week diagnostic that maps your commercial process, surfaces quick wins and prioritizes 3–5 AI opportunities with realistic timelines and costs. Not ready for that yet? Take the free AI Assessment on this site — it gives you an instant AI Sales Readiness Score." },
+          { q: "How long until we have something working?", a: "Weeks, not months. The AI Opportunity Assessment takes two weeks, the Sales Playbook Generator is built in days, and every engagement ends with something your team can use on day one — not a strategy document." },
+          { q: "Do you work in Spanish and English?", a: "Yes. We're a Mexican team with enterprise experience in LatAm and North America. Every engagement, deliverable and AI system can run in Spanish, English or both." },
+          { q: "Which channels does the Customer Support Engine cover?", a: "WhatsApp Business and web chat, trained on your company's knowledge, with an escalation flow to your team. Voice and email are available as optional channels, quoted separately." },
+          { q: "Do we need a specific CRM or tech stack?", a: "No. We pick the simplest stack that solves your problem. Native HubSpot and Salesforce integration for the Customer Support Engine is coming in the Pro tier." },
+          { q: "Who can access our company's knowledge in the Business Brain?", a: "Only the people you choose. It is available through a private link or credential — there is no public exposure — for your internal team, your channel partners, or both." },
+        ],
+      },
     },
     about: {
-      meta: { title: "About", description: "An AI agency that helps businesses in Mexico and LatAm implement AI that works — in weeks, not months. Real practitioners, real models, concrete deliverables from day one." },
+      meta: { title: "About Us — Mexican AI Agency for Sales Teams", description: "An AI agency that helps businesses in Mexico and LatAm implement AI that works — in weeks, not months. Real practitioners, real models, concrete deliverables from day one." },
       hero: {
         eyebrow: "About Itzam.ai",
         heading1: "Built to make AI",
@@ -221,16 +247,28 @@ export const dictionaries: Record<Locale, Dictionary> = {
       closing: { heading: "Let's build something real.", cta: "Talk to us" },
     },
     contact: {
-      meta: { title: "Contact", description: "Tell us what you're building, or what's slowing you down. We'll come back within 48 hours." },
+      meta: { title: "Contact Us — AI Agency in Mexico City", description: "Tell us what you're building, or what's slowing you down. Talk to an AI agency for sales teams in Mexico and LatAm — we reply within one business day." },
       eyebrow: "Contact",
       heading: "Let's talk.",
       sub: "Tell us what you're building, or what's slowing you down. We'll come back with a clear-eyed take and a concrete path forward.",
-      direct: { label: "Direct contact", email: "contact@itzam.ai", responseLabel: "Response time", response: "Within 48 hours, every business day.", locationLabel: "Based in", location: "Mexico City — working across LatAm." },
+      direct: { label: "Direct contact", email: "contact@itzam.ai", responseLabel: "Response time", response: "Within one business day.", locationLabel: "Based in", location: "Mexico City — working across LatAm." },
     },
     assessment: {
       meta: {
-        title: "Free AI Assessment — Instant AI diagnostic for your sales team",
+        title: "Free AI Assessment for Sales Teams — Instant Score",
         description: "Answer 14 quick questions and get your AI Sales Readiness Score instantly, plus a personalized diagnostic with your top automation opportunities. Free, no strings attached.",
+      },
+      faq: {
+        eyebrow: "FAQ",
+        heading: "About the free AI Assessment.",
+        items: [
+          { q: "What do I get?", a: "Your AI Sales Readiness Score (0–100) on screen as soon as you submit, broken down into five dimensions: data & CRM, documented sales process, proposals & quotes, response speed and AI maturity. Then our team prepares a personalized diagnostic with your top automation opportunities and a clear starting plan, and emails it to you within one business day." },
+          { q: "How long does it take?", a: "14 quick, mostly multiple-choice questions about your company, your sales process, your tools and where you stand with AI. Most people finish in a few minutes." },
+          { q: "Is it really free?", a: "Yes — free and with no commitment. It is an orientation tool to show you where AI can have the most impact in your commercial operation." },
+          { q: "Who is it for?", a: "Sales and commercial leaders at companies in Mexico and Latin America who want to know where AI can speed up prospecting, proposals, follow-up and customer response — before committing budget." },
+          { q: "How is it different from the AI Opportunity Assessment?", a: "The free assessment is a quick self-serve snapshot. The full AI Opportunity Assessment is a two-week engagement with our team: a 10–12 page report and an actionable plan with your 3–5 highest-impact opportunities, prioritized, with the route to implement them." },
+          { q: "What happens with my answers?", a: "We use them to prepare your diagnostic and to follow up with you. They are handled under our Privacy Policy, in line with Mexico's personal data protection law (LFPDPPP)." },
+        ],
       },
       hero: {
         eyebrow: "Free AI Assessment · 5 min",
@@ -295,6 +333,23 @@ export const dictionaries: Record<Locale, Dictionary> = {
         disclaimer: "This free assessment is an orientation tool and does not replace the full AI Opportunity Assessment.",
       },
     },
+    blog: {
+      meta: { title: "Blog — AI for Sales Teams: Case Studies & Guides", description: "Case studies and practical guides on applying AI to sales and commercial operations in Mexico and LatAm — from the Itzam.ai team." },
+      eyebrow: "Blog",
+      heading1: "Field notes",
+      heading2: "from real deployments.",
+      sub: "Case studies and practical guides on putting AI to work in sales and commercial teams — what we built, the numbers, and the decisions behind them.",
+      categories: { case_study: "Case study", guide: "Guide" },
+      minRead: "{n} min read",
+      by: "By",
+      backToBlog: "All articles",
+      related: "Keep reading",
+      readArticle: "Read article",
+      cta: {
+        assessment: { heading: "Where can AI help your sales team?", body: "Take the free AI Assessment: 14 quick questions, your AI Sales Readiness Score instantly, and a personalized diagnostic in your inbox.", button: "Take the free AI Assessment" },
+        contact: { heading: "Want something like this?", body: "Tell us what you're building, or what's slowing you down. We reply within one business day.", button: "Talk to us" },
+      },
+    },
     footer: { tagline: "Intelligence, deployed — across LatAm.", sectionsLabel: "Sections", contactLabel: "Contact", languageLabel: "Language", rights: "All rights reserved.", legalLabel: "Legal", privacyLink: "Privacy Policy", termsLink: "Terms and Conditions" },
     legal: {
       privacy: {
@@ -331,7 +386,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       sub: "Tell us what you're building, or what's slowing you down. We'll come back with a clear-eyed take and a concrete path forward.",
       fields: { name: "Name", email: "Work email", company: "Company", role: "Role", useCase: "What are you trying to solve?" },
       disclaimer: "We only use this to follow up. No spam, ever.",
-      submit: "Let's talk", submitting: "Sending…", successTitle: "Message received. ✦", successBody: "We'll be in touch within 48 hours. Let's build something real.",
+      submit: "Let's talk", submitting: "Sending…", successTitle: "Message received. ✦", successBody: "We'll be in touch within one business day. Let's build something real.",
     },
     app: {
       common: { logout: "Log out", back: "Back", save: "Save", saving: "Saving…", saved: "Saved", cancel: "Cancel", confirm: "Confirm", loading: "Loading…", error: "Something went wrong.", showPassword: "Show password", hidePassword: "Hide password" },
@@ -348,7 +403,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
 
   es: {
     meta: {
-      title: "Itzam.AI — IA para Equipos de Ventas en México y LatAm.",
+      title: "Itzam.ai — IA para Equipos de Ventas en México y LatAm",
       description: "Itzam.AI automatiza tu operación de ventas con IA — en semanas, no en meses. Desde un diagnóstico de 2 semanas hasta sistemas desplegados, para equipos comerciales en México y LatAm.",
     },
     nav: {
@@ -357,7 +412,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       switchLanguage: "Cambiar idioma",
       openMenu: "Abrir menú",
       closeMenu: "Cerrar menú",
-      links: { home: "Inicio", services: "Servicios", about: "Nosotros", contact: "Contacto", assessment: "AI Assessment Gratis" },
+      links: { home: "Inicio", services: "Servicios", about: "Nosotros", contact: "Contacto", assessment: "AI Assessment Gratis", blog: "Blog" },
     },
     common: { learnMore: "Conocer más", requestQuote: "Solicitar cotización", talkToUs: "Hablemos", backToTop: "Volver arriba", comingSoon: "Próximamente", addOn: "Add-on" },
     home: {
@@ -386,7 +441,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       contact: { eyebrow: "Hablemos", heading: "Cuéntanos qué estás construyendo.", sub: "O qué te está frenando. Volvemos con una lectura clara y un camino concreto." },
     },
     services: {
-      meta: { title: "Servicios", description: "Desde AI Opportunity Assessments hasta sistemas de IA desplegados — el catálogo completo de servicios de Itzam.ai para equipos comerciales en México y LatAm." },
+      meta: { title: "Servicios de IA para Equipos de Ventas en México", description: "AI Opportunity Assessment, Sales Playbook Generator, un agente de soporte 24/7 en WhatsApp y un Business Brain para tu empresa — servicios de IA para equipos de ventas en México y LatAm, en semanas." },
       eyebrow: "Servicios",
       heading1: "Del diagnóstico",
       heading2: "a producción.",
@@ -440,9 +495,21 @@ export const dictionaries: Record<Locale, Dictionary> = {
         },
       ],
       closing: { heading: "¿No sabes cuál te aplica?", body: "Cuéntanos dónde estás y te apuntamos al siguiente paso correcto — o construimos un engagement a la medida.", cta: "Hablemos" },
+      faq: {
+        eyebrow: "Preguntas frecuentes",
+        heading: "Lo que nos preguntan los líderes de ventas.",
+        items: [
+          { q: "¿Por dónde empezamos con IA en nuestro equipo de ventas?", a: "Con el AI Opportunity Assessment: un diagnóstico de dos semanas que mapea tu proceso comercial, identifica quick wins y prioriza de 3 a 5 oportunidades de IA con tiempos y costos realistas. ¿Aún no estás listo para eso? Haz el diagnóstico de IA gratis en este sitio — te da tu AI Sales Readiness Score al instante." },
+          { q: "¿En cuánto tiempo tenemos algo funcionando?", a: "En semanas, no en meses. El AI Opportunity Assessment toma dos semanas, el Sales Playbook Generator se construye en días, y cada proyecto termina con algo que tu equipo usa desde el día uno — no un documento de estrategia." },
+          { q: "¿Trabajan en español e inglés?", a: "Sí. Somos un equipo mexicano con experiencia enterprise en LatAm y Norteamérica. Cada proyecto, entregable y sistema de IA puede operar en español, inglés o ambos." },
+          { q: "¿Qué canales cubre el Customer Support Engine?", a: "WhatsApp Business y chat web, entrenado con el conocimiento de tu empresa y con un flujo de escalamiento a tu equipo. Voz y email están disponibles como canales opcionales, cotizados por separado." },
+          { q: "¿Necesitamos un CRM o stack tecnológico específico?", a: "No. Elegimos el stack más simple que resuelve tu problema. La integración nativa con HubSpot y Salesforce para el Customer Support Engine llega en el tier Pro." },
+          { q: "¿Quién puede acceder al conocimiento de nuestra empresa en el Business Brain?", a: "Solo quien tú decidas. Se accede por link privado o credencial — sin exposición pública — para tu equipo interno, tu canal de distribución, o ambos." },
+        ],
+      },
     },
     about: {
-      meta: { title: "Nosotros", description: "Una agencia de IA que ayuda a empresas en México y LatAm a implementar IA que funciona — en semanas, no en meses. Implementación práctica, rápida y con resultados desde el día uno." },
+      meta: { title: "Nosotros — Agencia Mexicana de IA para Ventas", description: "Una agencia de IA que ayuda a empresas en México y LatAm a implementar IA que funciona — en semanas, no en meses. Implementación práctica, rápida y con resultados desde el día uno." },
       hero: {
         eyebrow: "Sobre Itzam.ai",
         heading1: "Construidos para",
@@ -471,16 +538,28 @@ export const dictionaries: Record<Locale, Dictionary> = {
       closing: { heading: "Construyamos algo real.", cta: "Hablemos" },
     },
     contact: {
-      meta: { title: "Contacto", description: "Cuéntanos qué estás construyendo, o qué te está frenando. Volvemos en menos de 48 horas." },
+      meta: { title: "Contacto — Agencia de IA en Ciudad de México", description: "Cuéntanos qué estás construyendo, o qué te está frenando. Habla con una agencia de IA para equipos de ventas en México y LatAm — respondemos en menos de un día hábil." },
       eyebrow: "Contacto",
       heading: "Hablemos.",
       sub: "Cuéntanos qué estás construyendo, o qué te está frenando. Volvemos con una lectura clara y un camino concreto.",
-      direct: { label: "Contacto directo", email: "contact@itzam.ai", responseLabel: "Tiempo de respuesta", response: "En menos de 48 horas, todo día hábil.", locationLabel: "Ubicación", location: "Ciudad de México — operando en todo LatAm." },
+      direct: { label: "Contacto directo", email: "contact@itzam.ai", responseLabel: "Tiempo de respuesta", response: "En menos de un día hábil.", locationLabel: "Ubicación", location: "Ciudad de México — operando en todo LatAm." },
     },
     assessment: {
       meta: {
-        title: "AI Assessment Gratis — Diagnóstico instantáneo de IA para tu equipo de ventas",
+        title: "Diagnóstico de IA Gratis para tu Equipo de Ventas",
         description: "Responde 14 preguntas rápidas y obtén tu AI Sales Readiness Score al instante, más un diagnóstico personalizado con tus mayores oportunidades de automatización. Gratis y sin compromiso.",
+      },
+      faq: {
+        eyebrow: "Preguntas frecuentes",
+        heading: "Sobre el diagnóstico de IA gratis.",
+        items: [
+          { q: "¿Qué obtengo?", a: "Tu AI Sales Readiness Score (0–100) en pantalla en cuanto envías, desglosado en cinco dimensiones: datos y CRM, proceso de ventas documentado, propuestas y cotizaciones, velocidad de respuesta y madurez en IA. Después nuestro equipo prepara un diagnóstico personalizado con tus mayores oportunidades de automatización y un plan claro para arrancar, y te lo envía por correo en menos de un día hábil." },
+          { q: "¿Cuánto tiempo toma?", a: "14 preguntas rápidas, casi todas de opción múltiple, sobre tu empresa, tu proceso de ventas, tus herramientas y tu punto de partida con IA. La mayoría lo termina en pocos minutos." },
+          { q: "¿De verdad es gratis?", a: "Sí — gratis y sin compromiso. Es una herramienta orientativa para mostrarte dónde la IA puede tener más impacto en tu operación comercial." },
+          { q: "¿Para quién es?", a: "Para líderes de ventas y áreas comerciales de empresas en México y Latinoamérica que quieren saber dónde la IA puede acelerar la prospección, las propuestas, el seguimiento y la respuesta a clientes — antes de comprometer presupuesto." },
+          { q: "¿En qué se diferencia del AI Opportunity Assessment?", a: "El diagnóstico gratis es una foto rápida y autoservicio. El AI Opportunity Assessment completo es un proyecto de dos semanas con nuestro equipo: un reporte de 10–12 páginas y un plan accionable con tus 3–5 oportunidades de mayor impacto, priorizadas y con la ruta para implementarlas." },
+          { q: "¿Qué pasa con mis respuestas?", a: "Las usamos para preparar tu diagnóstico y darte seguimiento. Se tratan conforme a nuestro Aviso de Privacidad y a la Ley Federal de Protección de Datos Personales (LFPDPPP)." },
+        ],
       },
       hero: {
         eyebrow: "AI Assessment Gratis · 5 min",
@@ -545,6 +624,23 @@ export const dictionaries: Record<Locale, Dictionary> = {
         disclaimer: "Este assessment gratuito es una herramienta orientativa y no sustituye el AI Opportunity Assessment completo.",
       },
     },
+    blog: {
+      meta: { title: "Blog — IA para Equipos de Ventas: Casos y Guías", description: "Casos de éxito y guías prácticas para aplicar IA en ventas y operaciones comerciales en México y LatAm — del equipo de Itzam.ai." },
+      eyebrow: "Blog",
+      heading1: "Notas de campo",
+      heading2: "desde implementaciones reales.",
+      sub: "Casos y guías prácticas para poner la IA a trabajar en equipos comerciales — qué construimos, los números y las decisiones detrás.",
+      categories: { case_study: "Caso de éxito", guide: "Guía" },
+      minRead: "{n} min de lectura",
+      by: "Por",
+      backToBlog: "Todos los artículos",
+      related: "Sigue leyendo",
+      readArticle: "Leer artículo",
+      cta: {
+        assessment: { heading: "¿Dónde puede ayudar la IA a tu equipo de ventas?", body: "Haz el diagnóstico de IA gratis: 14 preguntas rápidas, tu AI Sales Readiness Score al instante y un diagnóstico personalizado en tu correo.", button: "Hacer el diagnóstico gratis" },
+        contact: { heading: "¿Quieres algo así?", body: "Cuéntanos qué estás construyendo, o qué te está frenando. Respondemos en menos de un día hábil.", button: "Hablemos" },
+      },
+    },
     footer: { tagline: "Inteligencia, en producción — en toda LatAm.", sectionsLabel: "Secciones", contactLabel: "Contacto", languageLabel: "Idioma", rights: "Todos los derechos reservados.", legalLabel: "Legal", privacyLink: "Aviso de Privacidad", termsLink: "Términos y Condiciones" },
     legal: {
       privacy: {
@@ -581,7 +677,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       sub: "Cuéntanos qué estás construyendo, o qué te está frenando. Volvemos con una lectura clara y un camino concreto.",
       fields: { name: "Nombre", email: "Correo de trabajo", company: "Empresa", role: "Puesto", useCase: "¿Qué estás intentando resolver?" },
       disclaimer: "Solo lo usamos para dar seguimiento. Sin spam, nunca.",
-      submit: "Hablemos", submitting: "Enviando…", successTitle: "Mensaje recibido. ✦", successBody: "Te contactamos en menos de 48 horas. Construyamos algo real.",
+      submit: "Hablemos", submitting: "Enviando…", successTitle: "Mensaje recibido. ✦", successBody: "Te contactamos en menos de un día hábil. Construyamos algo real.",
     },
     app: {
       common: { logout: "Cerrar sesión", back: "Volver", save: "Guardar", saving: "Guardando…", saved: "Guardado", cancel: "Cancelar", confirm: "Confirmar", loading: "Cargando…", error: "Algo salió mal.", showPassword: "Mostrar contraseña", hidePassword: "Ocultar contraseña" },

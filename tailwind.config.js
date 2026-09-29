@@ -17,8 +17,10 @@ module.exports = {
         bone: "#f4f1e8",
       },
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
+        // CSS variables come from next/font in app/layout.tsx.
+        sans: ["var(--font-inter)", "Inter", "ui-sans-serif", "system-ui", "sans-serif"],
         mono: [
+          "var(--font-plex-mono)",
           '"IBM Plex Mono"',
           "ui-monospace",
           "SFMono-Regular",

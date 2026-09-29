@@ -40,6 +40,8 @@ export type PipelineInput = {
   comments: string;
   score: ScoreResult;
   ip: string | null;
+  /** Pre-rendered "Origen del lead" block for the team email. */
+  origin?: { html: string; text: string };
 };
 
 function labelFor(key: string, locale: "es" | "en", answers: SelfAnswers, otherTexts: Record<string, string>): string {
@@ -101,6 +103,7 @@ export async function generateAndNotifyReport(input: PipelineInput): Promise<voi
       status,
       driveUrl: extra?.driveUrl,
       legitReason: extra?.legitReason,
+      origin: input.origin,
     });
     const base = sanitizeFilename(extra?.fileBase || `Assessment - ${input.contact.company}`);
     const attachments = [

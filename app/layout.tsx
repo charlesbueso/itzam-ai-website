@@ -1,13 +1,23 @@
 import type { Metadata, Viewport } from "next";
+import { Inter, IBM_Plex_Mono } from "next/font/google";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { ASSETS } from "@/lib/assets";
+import { SITE_NAME, SITE_URL } from "@/lib/seo";
 import Analytics from "@/components/Analytics";
 import HubSpot from "@/components/HubSpot";
 
-const SITE_URL = "https://itzam.ai";
-const SITE_NAME = "Itzam.ai";
-const TITLE = "Itzam.ai — AI for Sales Teams in Mexico and LatAm.";
+// Self-hosted via next/font: no render-blocking request to Google Fonts,
+// no layout shift on swap. Exposed as CSS variables for Tailwind/globals.css.
+const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-inter" });
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+  variable: "--font-plex-mono",
+});
+
+const TITLE = "Itzam.ai — AI for Sales Teams in Mexico and LatAm";
 const DESCRIPTION =
   "Itzam.AI automates your sales operation with AI — in weeks, not months. From a 2-week diagnostic to deployed AI systems, built for commercial teams in Mexico and LatAm.";
 const KEYWORDS = [
@@ -68,14 +78,9 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
     locale: "en_US",
     alternateLocale: ["es_MX"],
-    images: [
-      {
-        url: ASSETS.logoGold,
-        width: 1200,
-        height: 630,
-        alt: "Itzam.ai — Intelligence, deployed.",
-      },
-    ],
+    // Public pages get a branded card from app/[locale]/**/opengraph-image.tsx;
+    // this is only the fallback for routes without one.
+    images: [{ url: ASSETS.logoGold, alt: "Itzam.ai — Intelligence, deployed." }],
   },
   twitter: {
     card: "summary_large_image",
@@ -112,9 +117,14 @@ export const viewport: Viewport = {
 // Rich, machine-readable description so search engines and LLM crawlers can
 // answer "what is Itzam.ai" with high fidelity.
 
+// Every profile we control. Google uses `sameAs` to connect them into one
+// brand entity — the main lever for ranking #1 on "itzam". Add each new
+// official profile (Instagram, YouTube, Google Business Profile…) here.
+const SAME_AS = ["https://www.linkedin.com/company/itzamai/"];
+
 const organizationJsonLd = {
   "@context": "https://schema.org",
-  "@type": "ProfessionalService",
+  "@type": ["Organization", "ProfessionalService"],
   "@id": `${SITE_URL}#organization`,
   name: SITE_NAME,
   legalName: "Itzam.ai",
@@ -123,10 +133,16 @@ const organizationJsonLd = {
   logo: {
     "@type": "ImageObject",
     url: ASSETS.logoGold,
-    width: 1200,
-    height: 1200,
+    width: 1920,
+    height: 1080,
   },
   image: ASSETS.logoGold,
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Ciudad de México",
+    addressRegion: "CDMX",
+    addressCountry: "MX",
+  },
   description: DESCRIPTION,
   slogan: "Intelligence, deployed.",
   foundingDate: "2025",
@@ -166,9 +182,7 @@ const organizationJsonLd = {
       areaServed: ["MX", "US", "LATAM"],
     },
   ],
-  sameAs: [
-    "https://www.linkedin.com/company/itzam-ai",
-  ],
+  sameAs: SAME_AS,
 };
 
 const websiteJsonLd = {
@@ -188,18 +202,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${inter.variable} ${plexMono.variable}`}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin=""
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
-          rel="stylesheet"
-        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

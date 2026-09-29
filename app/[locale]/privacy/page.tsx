@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { getDictionary, isLocale } from "@/lib/i18n/dictionaries";
+import { pageMetadata } from "@/lib/seo";
 import { getPrivacy } from "@/lib/i18n/legal";
 import LegalPage from "@/components/LegalPage";
-
-const SITE_URL = "https://itzam.ai";
 
 export async function generateMetadata({
   params,
@@ -12,27 +11,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   if (!isLocale(params.locale)) return {};
   const dict = getDictionary(params.locale);
-  return {
+  return pageMetadata({
+    locale: params.locale,
+    path: "/privacy",
     title: dict.legal.privacy.meta.title,
     description: dict.legal.privacy.meta.description,
-    alternates: {
-      canonical: `/${params.locale}/privacy`,
-      languages: {
-        en: "/en/privacy",
-        "en-US": "/en/privacy",
-        es: "/es/privacy",
-        "es-MX": "/es/privacy",
-        "x-default": "/en/privacy",
-      },
-    },
-    openGraph: {
-      title: dict.legal.privacy.meta.title,
-      description: dict.legal.privacy.meta.description,
-      locale: params.locale === "es" ? "es_MX" : "en_US",
-      url: `${SITE_URL}/${params.locale}/privacy`,
-      type: "article",
-    },
-  };
+    ogType: "article",
+  });
 }
 
 export default function PrivacyPage({

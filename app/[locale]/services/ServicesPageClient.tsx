@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Footer from "@/components/Footer";
+import Faq from "@/components/Faq";
 import Reveal from "@/components/Reveal";
 import RevealText from "@/components/RevealText";
 import LoopVideo from "@/components/LoopVideo";
@@ -279,6 +280,9 @@ export default function ServicesPageClient() {
           </section>
         );
       })}
+
+      {/* ───────────── FAQ ───────────── */}
+      <Faq eyebrow={t.services.faq.eyebrow} heading={t.services.faq.heading} items={t.services.faq.items} />
 
       {/* ───────────── Closing ───────────── */}
       <section className="relative w-full bg-black px-6 py-28 md:px-10 md:py-36">
