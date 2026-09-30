@@ -3,9 +3,10 @@ import type { AuthorId, Block, Post } from "./types";
 import { voiceNotesCaseStudy } from "./posts/voice-notes-case-study";
 import { artValuationCaseStudy } from "./posts/art-valuation-case-study";
 import { aiAssessmentGuide } from "./posts/ai-assessment-guide";
+import { newalkAlliance } from "./posts/newalk-alliance";
 
 /** Newest first. Add new posts here (and bump nothing else — sitemap/OG pick them up). */
-export const POSTS: Post[] = [aiAssessmentGuide, voiceNotesCaseStudy, artValuationCaseStudy].sort((a, b) =>
+export const POSTS: Post[] = [newalkAlliance, aiAssessmentGuide, voiceNotesCaseStudy, artValuationCaseStudy].sort((a, b) =>
   b.published.localeCompare(a.published)
 );
 

@@ -17,9 +17,9 @@ const ROUTES: {
   { path: "", updated: "2026-09-29", changeFrequency: "weekly", priority: 1.0 },
   { path: "/services", updated: "2026-09-29", changeFrequency: "monthly", priority: 0.9 },
   { path: "/assessment", updated: "2026-09-29", changeFrequency: "monthly", priority: 0.9 },
-  { path: "/about", updated: "2026-09-29", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/about", updated: "2026-09-30", changeFrequency: "monthly", priority: 0.7 },
   { path: "/contact", updated: "2026-09-29", changeFrequency: "monthly", priority: 0.7 },
-  { path: "/blog", updated: "2026-09-29", changeFrequency: "weekly", priority: 0.8 },
+  { path: "/blog", updated: "2026-09-30", changeFrequency: "weekly", priority: 0.8 },
   { path: "/privacy", updated: "2026-05-01", changeFrequency: "yearly", priority: 0.3 },
   { path: "/terms", updated: "2026-05-01", changeFrequency: "yearly", priority: 0.3 },
 ];

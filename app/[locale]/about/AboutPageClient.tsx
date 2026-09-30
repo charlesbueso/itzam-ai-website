@@ -219,6 +219,60 @@ export default function AboutPageClient() {
         </div>
       </section>
 
+      {/* ───────────── Alliances ───────────── */}
+      <section id="alliances" className="relative w-full scroll-mt-24 bg-black px-6 pb-12 md:px-10 md:pb-16">
+        <div className="mx-auto grid w-full max-w-[90rem] grid-cols-1 gap-12 border-t border-white/10 pt-20 md:grid-cols-12 md:pt-28">
+          <div className="md:col-span-5">
+            <Reveal as="span">
+              <span className="text-xs font-medium uppercase tracking-[0.18em] text-[#c9a040]">
+                {t.about.alliances.eyebrow}
+              </span>
+            </Reveal>
+            <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-tight text-white md:text-5xl">
+              <RevealText as="span">{t.about.alliances.heading}</RevealText>
+            </h2>
+            <Reveal as="p" className="mt-6 max-w-md text-base text-white/70 md:text-lg">
+              {t.about.alliances.sub}
+            </Reveal>
+          </div>
+
+          <Reveal className="space-y-6 md:col-span-7" stagger={0.1}>
+            {t.about.alliances.items.map((a) => (
+              <article
+                key={a.name}
+                className="grid grid-cols-1 items-center gap-6 rounded-2xl border border-white/10 bg-white/[0.03] p-7 sm:grid-cols-[10rem_1fr] md:p-9"
+              >
+                <a
+                  href={a.url}
+                  target="_blank"
+                  rel="noopener"
+                  aria-label={a.visit}
+                  className="flex h-28 items-center justify-center rounded-xl border border-white/10 bg-black p-4 transition hover:border-[#c9a040]/40"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={a.logo} alt={a.name} width={640} height={454} loading="lazy" className="h-full w-auto" />
+                </a>
+                <div>
+                  <p className="font-mono text-xs uppercase tracking-[0.22em] text-[#c9a040]">{a.tag}</p>
+                  <h3 className="mt-2 text-2xl font-semibold text-white">{a.name}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-white/75 md:text-base">{a.body}</p>
+                  <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm font-semibold">
+                    {a.article && (
+                      <Link href={a.article.href} className="text-[#c9a040] underline-offset-4 hover:underline">
+                        {a.article.label} →
+                      </Link>
+                    )}
+                    <a href={a.url} target="_blank" rel="noopener" className="text-white/70 transition hover:text-white">
+                      {a.visit} ↗
+                    </a>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </Reveal>
+        </div>
+      </section>
+
       {/* ───────────── Closing ───────────── */}
       <section className="relative w-full bg-black px-6 py-24 md:px-10 md:py-32">
         <div className="mx-auto w-full max-w-3xl text-center">

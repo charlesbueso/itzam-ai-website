@@ -34,6 +34,10 @@ export type Dictionary = {
     conviction: { eyebrow: string; heading: string; values: { title: string; body: string }[] };
     team: { eyebrow: string; heading: string; sub: string; members: { name: string; role: string; bio: string }[] };
     closing: { heading: string; cta: string };
+    alliances: {
+      eyebrow: string; heading: string; sub: string;
+      items: { name: string; logo: string; url: string; tag: string; body: string; visit: string; article?: { label: string; href: string } }[];
+    };
   };
   contact: {
     meta: { title: string; description: string };
@@ -68,7 +72,7 @@ export type Dictionary = {
   blog: {
     meta: { title: string; description: string };
     eyebrow: string; heading1: string; heading2: string; sub: string;
-    categories: { case_study: string; guide: string };
+    categories: { case_study: string; guide: string; news: string };
     /** "{n}" = minutes */
     minRead: string;
     by: string; backToBlog: string; related: string; readArticle: string;
@@ -245,6 +249,22 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ],
       },
       closing: { heading: "Let's build something real.", cta: "Talk to us" },
+      alliances: {
+        eyebrow: "Alliances",
+        heading: "Partners that complete the route.",
+        sub: "We engineer the AI. Our partners cover what surrounds it — so what we deploy stays secure and governed.",
+        items: [
+          {
+            name: "Newalk AI",
+            logo: "/alliances/newalk-ai.png",
+            url: "https://newalk.ai/",
+            tag: "AI governance & security",
+            body: "Itzam brings the engineering: data, agents and implementation. Newalk AI brings governance, security and the relationship with risk teams, so the AI we deploy stays under control.",
+            visit: "Visit Newalk AI",
+            article: { label: "Read: AI in production, under control", href: "/en/blog/ai-in-production-under-control-newalk-alliance" },
+          },
+        ],
+      },
     },
     contact: {
       meta: { title: "Contact Us — AI Agency in Mexico City", description: "Tell us what you're building, or what's slowing you down. Talk to an AI agency for sales teams in Mexico and LatAm — we reply within one business day." },
@@ -339,7 +359,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       heading1: "Field notes",
       heading2: "from real deployments.",
       sub: "Case studies and practical guides on putting AI to work in sales and commercial teams — what we built, the numbers, and the decisions behind them.",
-      categories: { case_study: "Case study", guide: "Guide" },
+      categories: { case_study: "Case study", guide: "Guide", news: "News" },
       minRead: "{n} min read",
       by: "By",
       backToBlog: "All articles",
@@ -536,6 +556,22 @@ export const dictionaries: Record<Locale, Dictionary> = {
         ],
       },
       closing: { heading: "Construyamos algo real.", cta: "Hablemos" },
+      alliances: {
+        eyebrow: "Alianzas",
+        heading: "Aliados que completan la ruta.",
+        sub: "Nosotros construimos la IA. Nuestros aliados cubren lo que la rodea — para que lo que desplegamos sea seguro y esté bajo control.",
+        items: [
+          {
+            name: "Newalk AI",
+            logo: "/alliances/newalk-ai.png",
+            url: "https://newalk.ai/es/",
+            tag: "Gobierno y seguridad de IA",
+            body: "Itzam aporta la ingeniería: datos, agentes e implementación. Newalk AI aporta el gobierno, la seguridad y la relación con las áreas de riesgo, para que la IA que desplegamos se mantenga bajo control.",
+            visit: "Visitar Newalk AI",
+            article: { label: "Leer: IA en producción y bajo control", href: "/es/blog/ia-en-produccion-bajo-control-alianza-newalk" },
+          },
+        ],
+      },
     },
     contact: {
       meta: { title: "Contacto — Agencia de IA en Ciudad de México", description: "Cuéntanos qué estás construyendo, o qué te está frenando. Habla con una agencia de IA para equipos de ventas en México y LatAm — respondemos en menos de un día hábil." },
@@ -630,7 +666,7 @@ export const dictionaries: Record<Locale, Dictionary> = {
       heading1: "Notas de campo",
       heading2: "desde implementaciones reales.",
       sub: "Casos y guías prácticas para poner la IA a trabajar en equipos comerciales — qué construimos, los números y las decisiones detrás.",
-      categories: { case_study: "Caso de éxito", guide: "Guía" },
+      categories: { case_study: "Caso de éxito", guide: "Guía", news: "Noticias" },
       minRead: "{n} min de lectura",
       by: "Por",
       backToBlog: "Todos los artículos",
