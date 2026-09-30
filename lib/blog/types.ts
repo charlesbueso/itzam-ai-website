@@ -29,7 +29,7 @@ export type PostTranslation = {
 
 export type Post = {
   id: string;
-  category: "case_study" | "guide";
+  category: "case_study" | "guide" | "news";
   /** YYYY-MM-DD */
   published: string;
   updated?: string;
